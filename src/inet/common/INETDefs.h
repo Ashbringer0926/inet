@@ -124,6 +124,13 @@ extern int evFlags;
 #define EV_ENDL                               "." << endl
 #define EV_LOC                                EV_FAINT << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << "()" << EV_NORMAL
 
+class INET_API CmpcModulePtrById {
+  public:
+    bool operator()(const cModule *a, const cModule *b) const {
+        return a == nullptr ? b != nullptr : b != nullptr && a->getId() < b->getId();
+    }
+};
+
 } // namespace inet
 
 #endif
