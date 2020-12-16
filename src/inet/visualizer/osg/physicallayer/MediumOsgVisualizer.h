@@ -59,11 +59,11 @@ class INET_API MediumOsgVisualizer : public MediumVisualizerBase
     /**
      * The list of radio osg nodes.
      */
-    std::map<const physicallayer::IRadio *, osg::Node *> radioOsgNodes;
+    std::map<int /*IRadioId*/, osg::Node *> radioOsgNodes;
     /**
      * The propagating signal osg nodes.
      */
-    std::map<const physicallayer::ITransmission *, osg::Node *> signalOsgNodes;
+    std::map<int /*ITransmissionId*/, osg::Node *> signalOsgNodes;
     //@}
 
   protected:

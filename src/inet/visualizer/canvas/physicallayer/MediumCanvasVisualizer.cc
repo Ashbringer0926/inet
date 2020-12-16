@@ -250,11 +250,11 @@ void MediumCanvasVisualizer::refreshPowerDensityMapFigure(const cModule *network
             refreshPowerDensityMapFigurePowerFunction(mediumPowerDensityFunction, figure, 2);
         else if (!strcmp(powerDensityMapMode, "signal")) {
             if (transmissionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress->getId())->second;
                 refreshPowerDensityMapFigurePowerFunction(signalPowerDensityFunction, figure, 1);
             }
             else if (receptionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress->getId())->second;
                 refreshPowerDensityMapFigurePowerFunction(signalPowerDensityFunction, figure, 1);
             }
         }
@@ -262,14 +262,14 @@ void MediumCanvasVisualizer::refreshPowerDensityMapFigure(const cModule *network
             if (transmissionInProgress == nullptr && receptionInProgress == nullptr)
                 refreshPowerDensityMapFigurePowerFunction(mediumPowerDensityFunction, figure, 2);
             else if (transmissionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress)->second;
-                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(transmissionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress->getId())->second;
+                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(transmissionInProgress->getId())->second;
                 refreshPowerDensityMapFigurePowerFunction(noisePowerDensityFunction, figure, 0);
                 refreshPowerDensityMapFigurePowerFunction(signalPowerDensityFunction, figure, 1);
             }
             else if (receptionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress)->second;
-                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(receptionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress->getId())->second;
+                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(receptionInProgress->getId())->second;
                 refreshPowerDensityMapFigurePowerFunction(noisePowerDensityFunction, figure, 0);
                 refreshPowerDensityMapFigurePowerFunction(signalPowerDensityFunction, figure, 1);
             }
@@ -400,11 +400,11 @@ void MediumCanvasVisualizer::refreshSpectrumFigure(const cModule *networkNode, P
             refreshSpectrumFigurePowerFunction(mediumPowerDensityFunction, antenna, position, figure, 2);
         else if (!strcmp(spectrumMode, "signal")) {
             if (transmissionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress->getId())->second;
                 refreshSpectrumFigurePowerFunction(signalPowerDensityFunction, antenna, position, figure, 1);
             }
             else if (receptionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress->getId())->second;
                 refreshSpectrumFigurePowerFunction(signalPowerDensityFunction, antenna, position, figure, 1);
             }
         }
@@ -412,14 +412,14 @@ void MediumCanvasVisualizer::refreshSpectrumFigure(const cModule *networkNode, P
             if (transmissionInProgress == nullptr && receptionInProgress == nullptr)
                 refreshSpectrumFigurePowerFunction(mediumPowerDensityFunction, antenna, position, figure, 2);
             else if (transmissionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress)->second;
-                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(transmissionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress->getId())->second;
+                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(transmissionInProgress->getId())->second;
                 refreshSpectrumFigurePowerFunction(noisePowerDensityFunction, antenna, position, figure, 0);
                 refreshSpectrumFigurePowerFunction(signalPowerDensityFunction, antenna, position, figure, 1);
             }
             else if (receptionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress)->second;
-                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(receptionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress->getId())->second;
+                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(receptionInProgress->getId())->second;
                 refreshSpectrumFigurePowerFunction(noisePowerDensityFunction, antenna, position, figure, 0);
                 refreshSpectrumFigurePowerFunction(signalPowerDensityFunction, antenna, position, figure, 1);
             }
@@ -581,11 +581,11 @@ void MediumCanvasVisualizer::refreshSpectrogramFigure(const cModule *networkNode
             refreshSpectrogramFigurePowerFunction(mediumPowerDensityFunction, position, signalTimeUnit, figure, 2);
         else if (!strcmp(spectrogramMode, "signal")) {
             if (transmissionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress->getId())->second;
                 refreshSpectrogramFigurePowerFunction(signalPowerDensityFunction, position, signalTimeUnit, figure, 1);
             }
             else if (receptionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress->getId())->second;
                 refreshSpectrogramFigurePowerFunction(signalPowerDensityFunction, position, signalTimeUnit, figure, 1);
             }
         }
@@ -593,14 +593,14 @@ void MediumCanvasVisualizer::refreshSpectrogramFigure(const cModule *networkNode
             if (transmissionInProgress == nullptr && receptionInProgress == nullptr)
                 refreshSpectrogramFigurePowerFunction(mediumPowerDensityFunction, position, signalTimeUnit, figure, 2);
             else if (transmissionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress)->second;
-                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(transmissionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(transmissionInProgress->getId())->second;
+                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(transmissionInProgress->getId())->second;
                 refreshSpectrogramFigurePowerFunction(noisePowerDensityFunction, position, signalTimeUnit, figure, 0);
                 refreshSpectrogramFigurePowerFunction(signalPowerDensityFunction, position, signalTimeUnit, figure, 1);
             }
             else if (receptionInProgress != nullptr) {
-                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress)->second;
-                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(receptionInProgress)->second;
+                const auto& signalPowerDensityFunction = signalPowerDensityFunctions.find(receptionInProgress->getId())->second;
+                const auto& noisePowerDensityFunction = noisePowerDensityFunctions.find(receptionInProgress->getId())->second;
                 refreshSpectrogramFigurePowerFunction(noisePowerDensityFunction, position, signalTimeUnit, figure, 0);
                 refreshSpectrogramFigurePowerFunction(signalPowerDensityFunction, position, signalTimeUnit, figure, 1);
             }
@@ -776,7 +776,7 @@ void MediumCanvasVisualizer::setAnimationSpeed()
 
 cFigure *MediumCanvasVisualizer::getSignalDepartureFigure(const IRadio *radio) const
 {
-    auto it = signalDepartureFigures.find(radio);
+    auto it = signalDepartureFigures.find(radio->getId());
     if (it == signalDepartureFigures.end())
         return nullptr;
     else
@@ -785,12 +785,12 @@ cFigure *MediumCanvasVisualizer::getSignalDepartureFigure(const IRadio *radio) c
 
 void MediumCanvasVisualizer::setSignalDepartureFigure(const IRadio *radio, cFigure *figure)
 {
-    signalDepartureFigures[radio] = figure;
+    signalDepartureFigures[radio->getId()] = figure;
 }
 
 cFigure *MediumCanvasVisualizer::removeSignalDepartureFigure(const IRadio *radio)
 {
-    auto it = signalDepartureFigures.find(radio);
+    auto it = signalDepartureFigures.find(radio->getId());
     if (it == signalDepartureFigures.end())
         return nullptr;
     else {
@@ -801,7 +801,7 @@ cFigure *MediumCanvasVisualizer::removeSignalDepartureFigure(const IRadio *radio
 
 cFigure *MediumCanvasVisualizer::getSignalArrivalFigure(const IRadio *radio) const
 {
-    auto it = signalArrivalFigures.find(radio);
+    auto it = signalArrivalFigures.find(radio->getId());
     if (it == signalArrivalFigures.end())
         return nullptr;
     else
@@ -810,12 +810,12 @@ cFigure *MediumCanvasVisualizer::getSignalArrivalFigure(const IRadio *radio) con
 
 void MediumCanvasVisualizer::setSignalArrivalFigure(const IRadio *radio, cFigure *figure)
 {
-    signalArrivalFigures[radio] = figure;
+    signalArrivalFigures[radio->getId()] = figure;
 }
 
 cFigure *MediumCanvasVisualizer::removeSignalArrivalFigure(const IRadio *radio)
 {
-    auto it = signalArrivalFigures.find(radio);
+    auto it = signalArrivalFigures.find(radio->getId());
     if (it == signalArrivalFigures.end())
         return nullptr;
     else {
@@ -826,7 +826,7 @@ cFigure *MediumCanvasVisualizer::removeSignalArrivalFigure(const IRadio *radio)
 
 cFigure *MediumCanvasVisualizer::getSignalFigure(const ITransmission *transmission) const
 {
-    auto it = signalFigures.find(transmission);
+    auto it = signalFigures.find(transmission->getId());
     if (it == signalFigures.end())
         return nullptr;
     else
@@ -835,12 +835,12 @@ cFigure *MediumCanvasVisualizer::getSignalFigure(const ITransmission *transmissi
 
 void MediumCanvasVisualizer::setSignalFigure(const ITransmission *transmission, cFigure *figure)
 {
-    signalFigures[transmission] = figure;
+    signalFigures[transmission->getId()] = figure;
 }
 
 cFigure *MediumCanvasVisualizer::removeSignalFigure(const ITransmission *transmission)
 {
-    auto it = signalFigures.find(transmission);
+    auto it = signalFigures.find(transmission->getId());
     if (it == signalFigures.end())
         return nullptr;
     else {

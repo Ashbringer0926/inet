@@ -70,6 +70,7 @@ class INET_API MediumCanvasVisualizer : public MediumVisualizerBase
         SIP_PROPAGATION,
         SIP_TRANSMISSION,
     };
+
     SignalInProgress lastSignalInProgress = SIP_NONE;
     AnimationSpeedInterpolator animationSpeedInterpolator;
     ModuleRefByPar<NetworkNodeCanvasVisualizer> networkNodeVisualizer;
@@ -80,15 +81,15 @@ class INET_API MediumCanvasVisualizer : public MediumVisualizerBase
     /**
      * The list of transmission figures.
      */
-    std::map<const physicallayer::IRadio *, cFigure *> signalDepartureFigures;
+    std::map<int /*IRadioId*/, cFigure *> signalDepartureFigures;
     /**
      * The list of reception figures.
      */
-    std::map<const physicallayer::IRadio *, cFigure *> signalArrivalFigures;
+    std::map<int /*IRadioId*/, cFigure *> signalArrivalFigures;
     /**
      * The propagating signal figures.
      */
-    std::map<const physicallayer::ITransmission *, cFigure *> signalFigures;
+    std::map<int /*ITransmission*/, cFigure *> signalFigures;
     /**
      * The main power density figure.
      */
@@ -96,15 +97,15 @@ class INET_API MediumCanvasVisualizer : public MediumVisualizerBase
     /**
      * The list of power density figures.
      */
-    std::map<const cModule *, HeatMapPlotFigure *> powerDensityMapFigures;
+    std::map<const cModule *, HeatMapPlotFigure *, CmpcModulePtrById> powerDensityMapFigures;
     /**
      * The list of spectrum figures.
      */
-    std::map<const cModule *, PlotFigure *> spectrumFigures;
+    std::map<const cModule *, PlotFigure *, CmpcModulePtrById> spectrumFigures;
     /**
      * The list of spectrum flow figures.
      */
-    std::map<const cModule *, HeatMapPlotFigure *> spectrogramFigures;
+    std::map<const cModule *, HeatMapPlotFigure *, CmpcModulePtrById> spectrogramFigures;
     /**
      * The layer figure that contains the figures representing the ongoing communications.
      */
