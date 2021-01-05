@@ -60,7 +60,7 @@ GateVisualizerBase::GateVisualization *GateCanvasVisualizer::createGateVisualiza
     figure->setPosition(currentTimePosition);
     figure->setLabel(module->getFullName());
     auto networkNode = getContainingNode(module);
-    auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+    auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
     if (networkNodeVisualization == nullptr)
         throw cRuntimeError("Cannot create gate visualization for '%s', because network node visualization is not found for '%s'", module->getFullPath().c_str(), networkNode->getFullPath().c_str());
     return new GateCanvasVisualization(networkNodeVisualization, figure, gate);

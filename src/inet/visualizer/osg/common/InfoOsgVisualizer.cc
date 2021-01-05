@@ -62,7 +62,7 @@ InfoVisualizerBase::InfoVisualization *InfoOsgVisualizer::createInfoVisualizatio
     geode->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
     geode->addDrawable(text);
     auto networkNode = getContainingNode(module);
-    auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+    auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
     if (networkNodeVisualization == nullptr)
         throw cRuntimeError("Cannot create info visualization for '%s', because network node visualization is not found for '%s'", module->getFullPath().c_str(), networkNode->getFullPath().c_str());
     return new InfoOsgVisualization(networkNodeVisualization, geode, module->getId());

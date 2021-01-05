@@ -70,7 +70,7 @@ NetworkNodeCanvasVisualization *NetworkNodeCanvasVisualizer::createNetworkNodeVi
     return visualization;
 }
 
-NetworkNodeCanvasVisualization *NetworkNodeCanvasVisualizer::getNetworkNodeVisualization(const cModule *networkNode) const
+NetworkNodeCanvasVisualization *NetworkNodeCanvasVisualizer::findNetworkNodeVisualization(const cModule *networkNode) const
 {
     auto it = networkNodeVisualizations.find(networkNode);
     return it == networkNodeVisualizations.end() ? nullptr : it->second;

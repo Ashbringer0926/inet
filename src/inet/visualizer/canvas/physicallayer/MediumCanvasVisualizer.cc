@@ -124,7 +124,7 @@ void MediumCanvasVisualizer::initialize(int stage)
         for (cModule::SubmoduleIterator it(visualizationSubjectModule); !it.end(); it++) {
             auto networkNode = *it;
             if (isNetworkNode(networkNode) && networkNodeFilter.matches(networkNode)) {
-                auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+                auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
                 if (displayPowerDensityMaps) {
                     auto powerDensityMapFigure = new HeatMapPlotFigure();
                     powerDensityMapFigure->setTags("signal_power_density_map");
@@ -142,7 +142,7 @@ void MediumCanvasVisualizer::initialize(int stage)
                     powerDensityMapFigures[networkNode] = powerDensityMapFigure;
                 }
                 if (displaySpectrums) {
-                    auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+                    auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
                     auto spectrumFigure = new PlotFigure();
                     spectrumFigure->setTags("signal_spectrum");
                     spectrumFigure->setTooltip("This plot represents the signal spectral power density");
@@ -942,7 +942,7 @@ void MediumCanvasVisualizer::handleRadioAdded(const IRadio *radio)
     auto networkNode = getContainingNode(module);
     if (networkNodeFilter.matches(networkNode)) {
         invalidDisplay = true;
-        auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+        auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
         if (networkNodeVisualization == nullptr)
             throw cRuntimeError("Cannot create medium visualization for '%s', because network node visualization is not found for '%s'", module->getFullPath().c_str(), networkNode->getFullPath().c_str());
         if (displayInterferenceRanges || (module->hasPar("displayInterferenceRange") && module->par("displayInterferenceRange"))) {
@@ -1011,12 +1011,12 @@ void MediumCanvasVisualizer::handleRadioRemoved(const IRadio *radio)
         invalidDisplay = true;
         auto departureFigure = removeSignalDepartureFigure(radio);
         if (departureFigure != nullptr) {
-            auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+            auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
             networkNodeVisualization->removeAnnotation(departureFigure);
         }
         auto arrivalFigure = removeSignalArrivalFigure(radio);
         if (arrivalFigure != nullptr) {
-            auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+            auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
             networkNodeVisualization->removeAnnotation(arrivalFigure);
         }
         if (displayPowerDensityMaps || displaySpectrums || displaySpectrograms)
@@ -1071,7 +1071,7 @@ void MediumCanvasVisualizer::handleSignalDepartureStarted(const ITransmission *t
             if (!transmitter) return;
             auto figure = getSignalDepartureFigure(transmitter);
             auto networkNode = getContainingNode(check_and_cast<const cModule *>(transmitter));
-            auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+            auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
             networkNodeVisualization->setAnnotationVisible(figure, true);
             auto labelFigure = check_and_cast<LabeledIconFigure *>(figure)->getLabelFigure();
             if (auto scalarTransmission = dynamic_cast<const ScalarTransmission *>(transmission)) {
@@ -1097,7 +1097,7 @@ void MediumCanvasVisualizer::handleSignalDepartureEnded(const ITransmission *tra
             if (!transmitter) return;
             auto figure = getSignalDepartureFigure(transmitter);
             auto networkNode = getContainingNode(check_and_cast<const cModule *>(transmitter));
-            auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+            auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
             networkNodeVisualization->setAnnotationVisible(figure, false);
         }
     }
@@ -1116,7 +1116,7 @@ void MediumCanvasVisualizer::handleSignalArrivalStarted(const IReception *recept
             if (networkNodeFilter.matches(check_and_cast<const cModule *>(receiver))) {
                 auto figure = getSignalArrivalFigure(receiver);
                 auto networkNode = getContainingNode(check_and_cast<const cModule *>(receiver));
-                auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+                auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
                 networkNodeVisualization->setAnnotationVisible(figure, true);
                 auto labelFigure = check_and_cast<LabeledIconFigure *>(figure)->getLabelFigure();
                 if (auto scalarReception = dynamic_cast<const ScalarReception *>(reception)) {
@@ -1155,7 +1155,7 @@ void MediumCanvasVisualizer::handleSignalArrivalEnded(const IReception *receptio
             if (networkNodeFilter.matches(check_and_cast<const cModule *>(receiver))) {
                 auto figure = getSignalArrivalFigure(receiver);
                 auto networkNode = getContainingNode(check_and_cast<const cModule *>(receiver));
-                auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+                auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
                 networkNodeVisualization->setAnnotationVisible(figure, false);
             }
         }

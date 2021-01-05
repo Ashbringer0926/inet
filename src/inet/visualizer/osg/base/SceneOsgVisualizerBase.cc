@@ -185,7 +185,7 @@ osg::BoundingSphere SceneOsgVisualizerBase::getNetworkBoundingSphere()
         if (isNetworkNode(networkNode)) {
             nodeCount++;
             // NOTE: ignore network node annotations
-            auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+            auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
             auto mainNode = networkNodeVisualization->getMainPart();
             auto radius = std::max(0.0f, mainNode->computeBound().radius());
             auto drawable = new osg::ShapeDrawable(new osg::Sphere(networkNodeVisualization->getPosition(), radius));

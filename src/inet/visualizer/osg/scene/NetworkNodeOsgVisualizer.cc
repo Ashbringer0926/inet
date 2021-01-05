@@ -71,7 +71,7 @@ NetworkNodeOsgVisualization *NetworkNodeOsgVisualizer::createNetworkNodeVisualiz
     return new NetworkNodeOsgVisualization(networkNode, displayModuleName);
 }
 
-NetworkNodeOsgVisualization *NetworkNodeOsgVisualizer::getNetworkNodeVisualization(const cModule *networkNode) const
+NetworkNodeOsgVisualization *NetworkNodeOsgVisualizer::findNetworkNodeVisualization(const cModule *networkNode) const
 {
     auto it = networkNodeVisualizations.find(networkNode);
     return it == networkNodeVisualizations.end() ? nullptr : it->second;

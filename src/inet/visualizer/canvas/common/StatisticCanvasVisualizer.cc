@@ -84,7 +84,7 @@ StatisticVisualizerBase::StatisticVisualization *StatisticCanvasVisualizer::crea
     figure->setAssociatedObject(source);
     figure->setZIndex(zIndex);
     auto networkNode = getContainingNode(check_and_cast<cModule *>(source));
-    auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+    auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
     if (networkNodeVisualization == nullptr)
         throw cRuntimeError("Cannot create statistic visualization for '%s', because network node visualization is not found for '%s'", source->getFullPath().c_str(), networkNode->getFullPath().c_str());
     return new StatisticCanvasVisualization(networkNodeVisualization, figure, source->getId(), signal, getUnit(source));

@@ -356,7 +356,7 @@ void MediumOsgVisualizer::handleRadioAdded(const IRadio *radio)
         auto group = new osg::Group();
         auto module = const_cast<cModule *>(check_and_cast<const cModule *>(radio));
         auto networkNode = getContainingNode(module);
-        auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+        auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
         if (networkNodeVisualization == nullptr)
             throw cRuntimeError("Cannot create medium visualization for '%s', because network node visualization is not found for '%s'", module->getFullPath().c_str(), networkNode->getFullPath().c_str());
         networkNodeVisualization->addAnnotation(group, osg::Vec3d(0.0, 0.0, 0.0), 100.0);
@@ -416,7 +416,7 @@ void MediumOsgVisualizer::handleRadioRemoved(const IRadio *radio)
     auto node = removeRadioOsgNode(radio);
     if (node != nullptr) {
         auto module = const_cast<cModule *>(check_and_cast<const cModule *>(radio));
-        auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(getContainingNode(module));
+        auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(module));
         networkNodeVisualization->removeAnnotation(node);
     }
 }

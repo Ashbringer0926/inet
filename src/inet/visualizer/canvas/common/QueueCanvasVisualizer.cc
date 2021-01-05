@@ -62,7 +62,7 @@ QueueVisualizerBase::QueueVisualization *QueueCanvasVisualizer::createQueueVisua
     if (auto packetQueue = dynamic_cast<queueing::PacketQueue *>(queue))
         figure->setMaxElementCount(packetQueue->getMaxNumPackets());
     auto networkNode = getContainingNode(module);
-    auto networkNodeVisualization = networkNodeVisualizer->getNetworkNodeVisualization(networkNode);
+    auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
     if (networkNodeVisualization == nullptr)
         throw cRuntimeError("Cannot create queue visualization for '%s', because network node visualization is not found for '%s'", ownedObject->getFullPath().c_str(), networkNode->getFullPath().c_str());
     return new QueueCanvasVisualization(networkNodeVisualization, figure, queue);
