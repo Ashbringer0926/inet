@@ -83,10 +83,16 @@ void TransportConnectionOsgVisualizer::addConnectionVisualization(const Transpor
     TransportConnectionVisualizerBase::addConnectionVisualization(connectionVisualization);
     auto connectionOsgVisualization = static_cast<const TransportConnectionOsgVisualization *>(connectionVisualization);
     auto sourceModule = getSimulation()->getModule(connectionVisualization->sourceModuleId);
-    auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(sourceModule));
+    auto sourceNetworkNode = getContainingNode(sourceModule);
+    auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(sourceNetworkNode);
+    if (sourceVisualization == nullptr)
+        throw cRuntimeError("Cannot add transport connection visualization annotation for '%s', because network node visualization is not found for '%s'", sourceModule->getFullPath().c_str(), sourceNetworkNode->getFullPath().c_str());
     sourceVisualization->addAnnotation(connectionOsgVisualization->sourceNode, osg::Vec3d(0, 0, 32), 0); // TODO size
     auto destinationModule = getSimulation()->getModule(connectionVisualization->destinationModuleId);
-    auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(destinationModule));
+    auto destinationNetworkNode = getContainingNode(destinationModule);
+    auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(destinationNetworkNode);
+    if (destinationVisualization == nullptr)
+        throw cRuntimeError("Cannot add transport connection visualization annotation for '%s', because network node visualization is not found for '%s'", destinationModule->getFullPath().c_str(), destinationNetworkNode->getFullPath().c_str());
     destinationVisualization->addAnnotation(connectionOsgVisualization->destinationNode, osg::Vec3d(0, 0, 32), 0); // TODO size
 }
 

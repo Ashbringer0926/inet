@@ -84,7 +84,7 @@ const TransportConnectionVisualizerBase::TransportConnectionVisualization *Trans
     auto destinationNetworkNode = getContainingNode(destination);
     auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(destinationNetworkNode);
     if (destinationVisualization == nullptr)
-        throw cRuntimeError("Cannot create transport connection visualization for '%s', because network node visualization is not found for '%s'", source->getFullPath().c_str(), destinationNetworkNode->getFullPath().c_str());
+        throw cRuntimeError("Cannot create transport connection visualization for '%s', because network node visualization is not found for '%s'", destination->getFullPath().c_str(), destinationNetworkNode->getFullPath().c_str());
     return new TransportConnectionCanvasVisualization(sourceFigure, destinationFigure, source->getId(), destination->getId(), 1);
 }
 
@@ -94,12 +94,18 @@ void TransportConnectionCanvasVisualizer::addConnectionVisualization(const Trans
     auto connectionCanvasVisualization = static_cast<const TransportConnectionCanvasVisualization *>(connectionVisualization);
     auto sourceModule = getSimulation()->getModule(connectionVisualization->sourceModuleId);
     if (sourceModule != nullptr) {
-        auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(sourceModule));
+        auto sourceNetworkNode = getContainingNode(sourceModule);
+        auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(sourceNetworkNode);
+        if (sourceVisualization == nullptr)
+            throw cRuntimeError("Cannot add transport connection visualization for '%s', because network node visualization is not found for '%s'", sourceModule->getFullPath().c_str(), sourceNetworkNode->getFullPath().c_str());
         sourceVisualization->addAnnotation(connectionCanvasVisualization->sourceFigure, connectionCanvasVisualization->sourceFigure->getBounds().getSize(), placementHint, placementPriority);
     }
     auto destinationModule = getSimulation()->getModule(connectionVisualization->destinationModuleId);
     if (destinationModule != nullptr) {
-        auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(destinationModule));
+        auto destinationNetworkNode = getContainingNode(destinationModule);
+        auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(destinationNetworkNode);
+        if (destinationVisualization == nullptr)
+            throw cRuntimeError("Cannot add transport connection visualization for '%s', because network node visualization is not found for '%s'", destinationModule->getFullPath().c_str(), destinationNetworkNode->getFullPath().c_str());
         destinationVisualization->addAnnotation(connectionCanvasVisualization->destinationFigure, connectionCanvasVisualization->destinationFigure->getBounds().getSize(), placementHint, placementPriority);
     }
     setConnectionLabelsVisible(connectionVisualizations.size() > iconColorSet.getSize());
