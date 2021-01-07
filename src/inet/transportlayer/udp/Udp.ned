@@ -72,7 +72,7 @@ simple Udp like IUdp
         string interfaceTableModule;   // The path to the InterfaceTable module
         string icmpModule = default("^.ipv4.icmp");
         string icmpv6Module = default("^.ipv6.icmpv6");
-        string crcMode @enum("disabled", "declared", "computed") = default("declared");
+        string crcMode @mutable @enum("disabled", "declared", "computed") = default("declared");
         @display("i=block/transport");
         @signal[packetSentToUpper](type=cPacket);
         @signal[packetReceivedFromUpper](type=cPacket);
