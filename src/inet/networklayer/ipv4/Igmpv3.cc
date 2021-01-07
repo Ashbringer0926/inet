@@ -70,12 +70,12 @@ Igmpv3::~Igmpv3()
         deleteRouterInterfaceData(routerData.begin()->first);
 }
 
-void Igmpv3::initialize(int stage)
+void Igmpv3::handleParameterChange(const char *name)
 {
-    if (stage == INITSTAGE_LOCAL) {
+    if (name == nullptr) {
+        // at initialize only:
         ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
         rt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
-
         enabled = par("enabled");
         robustness = par("robustnessVariable");
         queryInterval = par("queryInterval");
@@ -88,9 +88,20 @@ void Igmpv3::initialize(int stage)
         lastMemberQueryCount = par("lastMemberQueryCount");
         lastMemberQueryTime = lastMemberQueryInterval * lastMemberQueryCount; // todo checknut ci je to takto..
         unsolicitedReportInterval = par("unsolicitedReportInterval");
+    }
+    if (name == nullptr || !strcmp(name, "crcMode")) {
         const char *crcModeString = par("crcMode");
         crcMode = parseCrcMode(crcModeString, false);
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
 
+void Igmpv3::initialize(int stage)
+{
+    if (stage == INITSTAGE_LOCAL) {
+        handleParameterChange(nullptr);
         addWatches();
     }
     // TODO INITSTAGE

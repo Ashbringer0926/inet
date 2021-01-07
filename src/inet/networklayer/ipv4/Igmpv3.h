@@ -255,6 +255,7 @@ class INET_API Igmpv3 : public cSimpleModule, protected cListener
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details) override;
+    virtual void handleParameterChange(const char *name) override;
     virtual ~Igmpv3();
 
   protected:
