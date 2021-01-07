@@ -84,7 +84,6 @@ class INET_API Ipv4 : public OperationalBase, public NetfilterBase, public INetw
     int defaultMCTimeToLive = -1;
     simtime_t fragmentTimeoutTime;
     bool limitedBroadcast = false;
-    std::string directBroadcastInterfaces = "";
 
     cPatternMatcher directBroadcastInterfaceMatcher;
 
@@ -239,7 +238,7 @@ class INET_API Ipv4 : public OperationalBase, public NetfilterBase, public INetw
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
     virtual void handleMessageWhenUp(cMessage *msg) override;
-
+    virtual void handleParameterChange(const char *name) override;
     void handleRequest(Request *request);
 
     // NetFilter functions:

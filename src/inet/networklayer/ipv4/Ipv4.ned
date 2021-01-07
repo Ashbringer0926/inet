@@ -95,12 +95,12 @@ simple Ipv4 like IIpv4
         string routingTableModule;
         string arpModule;
         string icmpModule;
-        string crcMode @enum("declared", "computed") = default("declared");
-        int timeToLive = default(32);
-        int multicastTimeToLive = default(32);
-        double fragmentTimeout @unit(s) = default(60s);
-        bool limitedBroadcast = default(false); // send out limited broadcast packets comming from higher layer
-        string directBroadcastInterfaces = default("");   // list of interfaces that direct broadcast is enabled (by default direct broadcast is disabled on all interfaces)
+        string crcMode @mutable @enum("declared", "computed") = default("declared");
+        int timeToLive @mutable = default(32);
+        int multicastTimeToLive @mutable = default(32);
+        double fragmentTimeout @mutable @unit(s) = default(60s);
+        bool limitedBroadcast @mutable = default(false); // send out limited broadcast packets comming from higher layer
+        string directBroadcastInterfaces @mutable = default("");   // list of interfaces that direct broadcast is enabled (by default direct broadcast is disabled on all interfaces)
         @display("i=block/routing");
         @signal[packetSentToUpper](type=cPacket);
         @signal[packetReceivedFromUpper](type=cPacket);
