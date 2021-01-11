@@ -120,6 +120,7 @@ class INET_API Arp : public OperationalBase, public IArp
     virtual bool addressRecognized(Ipv4Address destAddr, NetworkInterface *ie);
     virtual void processArpPacket(Packet *packet);
     virtual void updateArpCache(ArpCacheEntry *entry, const MacAddress& macAddress);
+    virtual void purgeCache();
 
     virtual MacAddress resolveMacAddressForArpReply(const NetworkInterface *ie, const ArpPacket *arp);
 
