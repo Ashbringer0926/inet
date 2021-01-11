@@ -44,12 +44,10 @@ simple EthernetEncapsulation like IEthernetEncapsulation
 {
     parameters:
         string interfaceTableModule;   // The path to the InterfaceTable module
-        bool useSNAP = default(false);  // create EtherFrameWithSNAP frames instead of EthernetIIFrame
-        string fcsMode @enum("declared","computed");
+        bool useSNAP @mutable = default(false);  // create EtherFrameWithSNAP frames instead of EthernetIIFrame
+        string fcsMode @mutable @enum("declared","computed");
         bool registerProtocol = default(false);     //FIXME //KLUDGE should redesign place of EthernetEncapsulation and LLC modules
         @lifecycleSupport;
-        double stopOperationExtraTime @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished
-        double stopOperationTimeout @unit(s) = default(2s);    // timeout value for lifecycle stop operation
         @display("i=block/square");
         @signal[encapPk](type=cPacket);
         @signal[decapPk](type=cPacket);

@@ -65,6 +65,7 @@ class INET_API EthernetEncapsulation : public Ieee8022Llc
     virtual ~EthernetEncapsulation();
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
+    virtual void handleParameterChange(const char *name) override;
 
     virtual void processCommandFromHigherLayer(Request *msg) override;
     virtual void processPacketFromHigherLayer(Packet *msg) override;

@@ -73,15 +73,28 @@ bool EthernetEncapsulation::Socket::matches(Packet *packet, const Ptr<const Ethe
     return true;
 }
 
+void EthernetEncapsulation::handleParameterChange(const char *name)
+{
+    if (name == nullptr || !strcmp(name, "useSNAP")) {
+        useSNAP = par("useSNAP");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "fcsMode")) {
+        fcsMode = parseFcsMode(par("fcsMode"));
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void EthernetEncapsulation::initialize(int stage)
 {
     Ieee8022Llc::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        fcsMode = parseFcsMode(par("fcsMode"));
+        handleParameterChange(nullptr);
         seqNum = 0;
         WATCH(seqNum);
         totalFromHigherLayer = totalFromMAC = totalPauseSent = 0;
-        useSNAP = par("useSNAP");
         networkInterface = findContainingNicModule(this); // TODO or getContainingNicModule() ? or use a macaddresstable?
 
         WATCH_PTRMAP(socketIdToSocketMap);
