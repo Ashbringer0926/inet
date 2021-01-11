@@ -47,12 +47,12 @@ module Ppp
 {
     parameters:
         string interfaceTableModule;   // The path to the InterfaceTable module
-        string displayStringTextFormat = default("rate: %b\nsent: %s, rcvd: %r\nqueue: %q, drop: %d");
-        bool sendRawBytes = default(false); // when true packets are serialized into a sequence of bytes before sending out
-        int mtu @unit(B) = default(4470B);
+        string displayStringTextFormat @mutable = default("rate: %b\nsent: %s, rcvd: %r\nqueue: %q, drop: %d");
+        bool sendRawBytes @mutable = default(false); // when true packets are serialized into a sequence of bytes before sending out
+        int mtu @mutable @unit(B) = default(4470B); // TODO move to NetworkInterface
         @lifecycleSupport;
-        double stopOperationExtraTime @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished
-        double stopOperationTimeout @unit(s) = default(2s);    // timeout value for lifecycle stop operation
+        double stopOperationExtraTime @mutable @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished
+        double stopOperationTimeout @mutable @unit(s) = default(2s);    // timeout value for lifecycle stop operation
         @class(Ppp);
         @display("i=block/rxtx");
 

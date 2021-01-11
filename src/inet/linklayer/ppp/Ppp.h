@@ -45,6 +45,8 @@ class INET_API Ppp : public MacProtocolBase
     // saved current transmission
     Packet *curTxPacket = nullptr;
 
+    simtime_t stopOperationExtraTime;
+    simtime_t stopOperationTimeout;
     std::string oldConnColor;
 
     // statistics
@@ -80,6 +82,7 @@ class INET_API Ppp : public MacProtocolBase
     virtual void handleUpperPacket(Packet *packet) override;
     virtual void handleLowerPacket(Packet *packet) override;
     virtual void handleStopOperation(LifecycleOperation *operation) override;
+    virtual void handleParameterChange(const char *name) override;
 };
 
 } // namespace inet
