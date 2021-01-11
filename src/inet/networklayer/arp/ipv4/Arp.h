@@ -67,7 +67,6 @@ class INET_API Arp : public OperationalBase, public IArp
     simtime_t retryTimeout;
     int retryCount = 0;
     simtime_t cacheTimeout;
-    std::string proxyArpInterfaces = "";
     long numResolutions = 0;
     long numFailedResolutions = 0;
     long numRequestsSent = 0;
@@ -104,6 +103,7 @@ class INET_API Arp : public OperationalBase, public IArp
     virtual void initialize(int stage) override;
     virtual void handleMessageWhenUp(cMessage *msg) override;
     virtual void finish() override;
+    virtual void handleParameterChange(const char *name) override;
 
     // Lifecycle methods
     virtual bool isInitializeStage(int stage) override { return stage == INITSTAGE_NETWORK_LAYER; }

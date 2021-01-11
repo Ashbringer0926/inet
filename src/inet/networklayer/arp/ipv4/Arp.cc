@@ -54,18 +54,39 @@ Arp::Arp()
 {
 }
 
+void Arp::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize only:
+        ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
+        rt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
+    }
+    if (name == nullptr || !strcmp(name, "retryTimeout")) {
+        retryTimeout = par("retryTimeout");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "retryCount")) {
+        retryCount = par("retryCount");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "cacheTimeout")) {
+        cacheTimeout = par("cacheTimeout");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "proxyArpInterfaces")) {
+        std::string proxyArpInterfaces = par("proxyArpInterfaces").stdstringValue();
+        proxyArpInterfacesMatcher.setPattern(proxyArpInterfaces.c_str(), false, true, false);
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void Arp::initialize(int stage)
 {
     OperationalBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        retryTimeout = par("retryTimeout");
-        retryCount = par("retryCount");
-        cacheTimeout = par("cacheTimeout");
-        proxyArpInterfaces = par("proxyArpInterfaces").stdstringValue();
-
-        proxyArpInterfacesMatcher.setPattern(proxyArpInterfaces.c_str(), false, true, false);
-
         // init statistics
         numRequestsSent = numRepliesSent = 0;
         numResolutions = numFailedResolutions = 0;
@@ -77,8 +98,6 @@ void Arp::initialize(int stage)
         WATCH_PTRMAP(arpCache);
     }
     else if (stage == INITSTAGE_NETWORK_LAYER) {
-        ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
-        rt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
         registerService(Protocol::arp, gate("netwIn"), gate("netwOut"));
         registerProtocol(Protocol::arp, gate("ifOut"), gate("ifIn"));
     }
