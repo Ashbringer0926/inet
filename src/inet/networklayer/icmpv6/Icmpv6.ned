@@ -26,8 +26,8 @@ package inet.networklayer.icmpv6;
 simple Icmpv6
 {
     parameters:
-        string interfaceTableModule;   // The path to the InterfaceTable module
-        string crcMode @enum("declared", "computed") = default("declared");
+        string interfaceTableModule @mutable;   // The path to the InterfaceTable module
+        string crcMode @mutable @enum("declared", "computed") = default("declared");
         @display("i=block/control");
     gates:
         input transportIn;

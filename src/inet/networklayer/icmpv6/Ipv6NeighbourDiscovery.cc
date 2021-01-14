@@ -86,46 +86,47 @@ Ipv6NeighbourDiscovery::~Ipv6NeighbourDiscovery()
     }
 }
 
+void Ipv6NeighbourDiscovery::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize only:
+        ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
+        rt6 = getModuleFromPar<Ipv6RoutingTable>(par("routingTableModule"), this);
+        icmpv6 = getModuleFromPar<Icmpv6>(par("icmpv6Module"), this);
+#ifdef INET_WITH_xMIPv6
+        mipv6 = (rt6->isMobileNode()) ? getModuleFromPar<xMIPv6>(par("xmipv6Module"), this) : nullptr;
+#endif /* INET_WITH_xMIPv6 */
+        minIntervalBetweenRAs = par("minIntervalBetweenRAs"); // TODO processing it anytime
+        maxIntervalBetweenRAs = par("maxIntervalBetweenRAs"); // TODO processing it anytime
+    }
+    if (name == nullptr || !strcmp(name, "crcMode")) {
+        const char *crcModeString = par("crcMode");
+        crcMode = parseCrcMode(crcModeString, false);
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void Ipv6NeighbourDiscovery::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        const char *crcModeString = par("crcMode");
-        crcMode = parseCrcMode(crcModeString, false);
     }
     else if (stage == INITSTAGE_NETWORK_LAYER_PROTOCOLS) {
+        handleParameterChange(nullptr);
         cModule *node = findContainingNode(this);
         NodeStatus *nodeStatus = node ? check_and_cast_nullable<NodeStatus *>(node->getSubmodule("status")) : nullptr;
         bool isOperational = (!nodeStatus) || nodeStatus->getState() == NodeStatus::UP;
         if (!isOperational)
             throw cRuntimeError("This module doesn't support starting in node DOWN state");
-        ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
-        rt6 = getModuleFromPar<Ipv6RoutingTable>(par("routingTableModule"), this);
-        icmpv6 = getModuleFromPar<Icmpv6>(par("icmpv6Module"), this);
 
-#ifdef INET_WITH_xMIPv6
-        if (rt6->isMobileNode())
-            mipv6 = getModuleFromPar<xMIPv6>(par("xmipv6Module"), this);
-#endif /* INET_WITH_xMIPv6 */
 
         pendingQueue.setName("pendingQueue");
 
-#ifdef INET_WITH_xMIPv6
-//         MIPv6Enabled = par("MIPv6Support"); // (Zarrar 14.07.07)
-        /*if(rt6->isRouter()) // 12.9.07 - CB
-           {
-            minRAInterval = par("minIntervalBetweenRAs"); // from the omnetpp.ini file (Zarrar 15.07.07)
-            maxRAInterval = par("maxIntervalBetweenRAs"); // from the omnetpp.ini file (Zarrar 15.07.07)
-            //WATCH (MIPv6Enabled);    // (Zarrar 14.07.07)
-            WATCH(minRAInterval);    // (Zarrar 15.07.07)
-            WATCH(maxRAInterval);    // (Zarrar 15.07.07)
-           }*/
-#endif /* INET_WITH_xMIPv6 */
-
         for (int i = 0; i < ift->getNumInterfaces(); i++) {
             NetworkInterface *ie = ift->getInterface(i);
-
             if (ie->getProtocolData<Ipv6InterfaceData>()->getAdvSendAdvertisements() && !(ie->isLoopback())) {
                 createRaTimer(ie);
             }
@@ -1664,10 +1665,8 @@ void Ipv6NeighbourDiscovery::createRaTimer(NetworkInterface *ie)
 
     if (canServeWirelessNodes(ie)) {
         EV_INFO << "This Interface is connected to a WLAN AP, hence using MIPv6 Default Values" << endl;
-        simtime_t minRAInterval = par("minIntervalBetweenRAs"); // reading from the omnetpp.ini (ZY 23.07.09)
-        simtime_t maxRAInterval = par("maxIntervalBetweenRAs"); // reading from the omnetpp.ini (ZY 23.07.09
-        ie->getProtocolDataForUpdate<Ipv6InterfaceData>()->setMinRtrAdvInterval(minRAInterval);
-        ie->getProtocolDataForUpdate<Ipv6InterfaceData>()->setMaxRtrAdvInterval(maxRAInterval);
+        ie->getProtocolDataForUpdate<Ipv6InterfaceData>()->setMinRtrAdvInterval(minIntervalBetweenRAs);
+        ie->getProtocolDataForUpdate<Ipv6InterfaceData>()->setMaxRtrAdvInterval(maxIntervalBetweenRAs);
     }
     else {
         EV_INFO << "This Interface is not connected to a WLAN AP, hence using default values" << endl;

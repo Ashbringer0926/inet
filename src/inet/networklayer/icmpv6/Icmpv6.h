@@ -23,6 +23,7 @@
 #include "inet/common/IProtocolRegistrationListener.h"
 #include "inet/common/lifecycle/LifecycleUnsupported.h"
 #include "inet/common/packet/Packet.h"
+#include "inet/networklayer/contract/IInterfaceTable.h"
 #include "inet/networklayer/icmpv6/Icmpv6Header_m.h"
 #include "inet/transportlayer/common/CrcMode_m.h"
 
@@ -72,6 +73,7 @@ class INET_API Icmpv6 : public cSimpleModule, public LifecycleUnsupported, publi
      */
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
+    virtual void handleParameterChange(const char *name) override;
 
     /**
      *  Processing of messages that arrive in this module. Messages arrived here
@@ -106,6 +108,7 @@ class INET_API Icmpv6 : public cSimpleModule, public LifecycleUnsupported, publi
 
   protected:
     CrcMode crcMode = CRC_MODE_UNDEFINED;
+    IInterfaceTable *ift = nullptr;
     typedef std::map<long, int> PingMap;
     PingMap pingMap;
     std::set<int> transportProtocols; // where to send up packets

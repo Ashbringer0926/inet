@@ -29,7 +29,7 @@ simple Ipv6NeighbourDiscovery
 {
     parameters:
         string interfaceTableModule;   // The path to the InterfaceTable module
-        string crcMode @enum("declared", "computed") = default("declared");
+        string crcMode @mutable @enum("declared", "computed") = default("declared");
         string icmpv6Module;
         string xmipv6Module;
         string routingTableModule;
