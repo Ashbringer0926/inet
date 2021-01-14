@@ -35,6 +35,7 @@ simple AdaptiveProbabilisticBroadcast extends ProbabilisticBroadcast
 {
     parameters:
         @class(AdaptiveProbabilisticBroadcast);
-        double timeInNeighboursTable @unit(s) = default(60 s);
+        double timeInNeighboursTable @mutable @unit(s) = default(60 s);
+        beta = 1.0; // TODO beta = 1.0 at initialize() and adaptive changed by module
 }
 

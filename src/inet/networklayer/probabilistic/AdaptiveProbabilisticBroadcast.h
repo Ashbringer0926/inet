@@ -30,6 +30,7 @@ class INET_API AdaptiveProbabilisticBroadcast : public ProbabilisticBroadcast
 
     /** @brief Initialization of the module and some variables*/
     virtual void initialize(int) override;
+    virtual void handleParameterChange(const char *name) override;
 
   protected:
     typedef std::map<L3Address, cMessage *> NeighborMap;

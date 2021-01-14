@@ -45,6 +45,7 @@ class INET_API ProbabilisticBroadcast : public NetworkProtocolBase, public INetw
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
 
     virtual void initialize(int) override;
+    virtual void handleParameterChange(const char *name) override;
 
     virtual void finish() override;
 

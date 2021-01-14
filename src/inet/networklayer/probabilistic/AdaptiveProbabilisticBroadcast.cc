@@ -16,16 +16,24 @@ using std::endl;
 
 Define_Module(AdaptiveProbabilisticBroadcast);
 
+void AdaptiveProbabilisticBroadcast::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize only:
+    }
+    if (name == nullptr || !strcmp(name, "timeInNeighboursTable")) {
+        timeInNeighboursTable = par("timeInNeighboursTable");
+        if (name) return;
+    }
+    ProbabilisticBroadcast::handleParameterChange(name);
+}
+
 void AdaptiveProbabilisticBroadcast::initialize(int stage)
 {
     ProbabilisticBroadcast::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        beta = 1.0;
-
         bvec.setName("Beta Vector");
-
-        timeInNeighboursTable = par("timeInNeighboursTable");
     }
 }
 

@@ -25,18 +25,45 @@ Define_Module(ProbabilisticBroadcast);
 
 long ProbabilisticBroadcast::id_counter = 0;
 
+void ProbabilisticBroadcast::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize only:
+        headerLength = par("headerLength");
+    }
+    if (name == nullptr || !strcmp(name, "bcperiod")) {
+        broadcastPeriod = par("bcperiod");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "beta")) {
+        beta = par("beta");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "maxNbBcast")) {
+        maxNbBcast = par("maxNbBcast");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "maxFirstBcastBackoff")) {
+        maxFirstBcastBackoff = par("maxFirstBcastBackoff");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "timeInQueueAfterDeath")) {
+        timeInQueueAfterDeath = par("timeInQueueAfterDeath");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "timeToLive")) {
+        timeToLive = par("timeToLive");
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void ProbabilisticBroadcast::initialize(int stage)
 {
     NetworkProtocolBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        broadcastPeriod = par("bcperiod");
-        beta = par("beta");
-        maxNbBcast = par("maxNbBcast");
-        headerLength = par("headerLength");
-        timeInQueueAfterDeath = par("timeInQueueAfterDeath");
-        timeToLive = par("timeToLive");
         broadcastTimer = new cMessage("broadcastTimer");
-        maxFirstBcastBackoff = par("maxFirstBcastBackoff");
         oneHopLatencies.setName("oneHopLatencies");
         nbDataPacketsReceived = 0;
         nbDataPacketsSent = 0;
