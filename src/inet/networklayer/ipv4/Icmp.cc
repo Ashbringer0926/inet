@@ -47,18 +47,24 @@ void Icmp::handleParameterChange(const char *name)
     if (name == nullptr || !strcmp(name, "crcMode")) {
         const char *crcModeString = par("crcMode");
         crcMode = parseCrcMode(crcModeString, false);
+        if (name) return;
     }
     if (name == nullptr || !strcmp(name, "quoteLength")) {
         quoteLength = B(par("quoteLength"));
         if (quoteLength < B(8))
             throw cRuntimeError("The quoteLength must be 8 bytes or larger");
+        if (name) return;
     }
     if (name == nullptr || !strcmp(name, "interfaceTableModule")) {
         ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
+        if (name) return;
     }
     if (name == nullptr || !strcmp(name, "routingTableModule")) {
         rt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
+        if (name) return;
     }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
 }
 
 void Icmp::initialize(int stage)
