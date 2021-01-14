@@ -152,6 +152,7 @@ class INET_API Ipv4RoutingTable : public cSimpleModule, public IIpv4RoutingTable
   protected:
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
+    virtual void handleParameterChange(const char *name) override;
 
     /**
      * Raises an error.
