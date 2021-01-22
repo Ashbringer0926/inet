@@ -5,13 +5,12 @@
 //           University of Rostock, Germany
 // 
 
-package ieee8021as.simulations;
+package inet.examples.ieee8021as;
 
-import ieee8021as.GPtpBridge;
-import ieee8021as.GPtpMaster;
-import ieee8021as.GPtpSlave;
-import inet.networklayer.configurator.ipv4.IPv4NetworkConfigurator;
-import inet.node.dymo.DYMORouter;
+import inet.linklayer.ieee8021as.GPtpBridge;
+import inet.linklayer.ieee8021as.GPtpMaster;
+import inet.linklayer.ieee8021as.GPtpSlave;
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.node.inet.StandardHost;
 
 
@@ -79,7 +78,7 @@ network NetworkWithCrossTraffic
         standardHost11: StandardHost {
             @display("p=927,305");
         }
-        configurator: IPv4NetworkConfigurator {
+        configurator: Ipv4NetworkConfigurator {
             @display("p=83,38");
         }
     connections:

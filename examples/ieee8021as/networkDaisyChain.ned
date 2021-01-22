@@ -5,12 +5,13 @@
 //           University of Rostock, Germany
 //  
 
-package ieee8021as.simulations;
+package inet.examples.ieee8021as;
 
-import ieee8021as.GPtpBridge;
-import ieee8021as.GPtpMaster;
-import ieee8021as.GPtpSlave;
-import inet.networklayer.configurator.ipv4.IPv4NetworkConfigurator;
+import inet.linklayer.ieee8021as.GPtpBridge;
+import inet.linklayer.ieee8021as.GPtpMaster;
+import inet.linklayer.ieee8021as.GPtpSlave;
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
+
 
 network NetworkDaisyChain
 {
@@ -58,11 +59,11 @@ network NetworkDaisyChain
         gPtpSlave7: GPtpSlave {
             @display("p=124,94");
         }
-        configurator: IPv4NetworkConfigurator {
+        configurator: Ipv4NetworkConfigurator {
             @display("p=51,33");
         }
     connections:
-       
+
         gPtpMaster.ethg++ <--> Ethernet100 <--> gPtpBridge0.ethg++;
         gPtpBridge0.ethg++ <--> Ethernet100 <--> gPtpSlave0.ethg++;
         gPtpBridge0.ethg++ <--> Ethernet100 <--> gPtpSlave1.ethg++;
