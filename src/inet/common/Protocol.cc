@@ -98,6 +98,7 @@ const Protocol Protocol::ethernetMac("ethernetmac", "Ethernet MAC", Protocol::Li
 const Protocol Protocol::ethernetPhy("ethernetphy", "Ethernet PHY", Protocol::PhysicalLayer);
 const Protocol Protocol::ftp("ftp", "FTP");
 const Protocol Protocol::gpsr("gpsr", "GPSR");
+const Protocol Protocol::gptp("gptp", "gPTP");
 const Protocol Protocol::http("http", "HTTP");
 const Protocol Protocol::icmpv4("icmpv4", "ICMPv4", Protocol::NetworkLayer);
 const Protocol Protocol::icmpv6("icmpv6", "ICMPv6", Protocol::NetworkLayer);
