@@ -143,7 +143,7 @@ int RealTimeScheduler::receiveUntil(int64_t targetTime)
     // in order to keep UI responsiveness by invoking getEnvir()->idle()
     int64_t curTime = opp_get_monotonic_clock_nsecs();
 
-    while ((targetTime - curTime) >= 2000000 || (targetTime - curTime) >= 2 * UI_REFRESH_TIME) {
+    while ((targetTime - curTime) >= 2 * UI_REFRESH_TIME * 1000) {   // us --> ns
         if (receiveWithTimeout(UI_REFRESH_TIME))
             return 1;
         if (getEnvir()->idle())
@@ -154,7 +154,7 @@ int RealTimeScheduler::receiveUntil(int64_t targetTime)
     // difference is now at most UI_REFRESH_TIME, do it at once
     int64_t remaining = targetTime - curTime;
     if (remaining > 0)
-        if (receiveWithTimeout(remaining))
+        if (receiveWithTimeout(remaining / 1000))  // ns --> us
             return 1;
     return 0;
 }
