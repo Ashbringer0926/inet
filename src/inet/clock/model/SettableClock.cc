@@ -38,6 +38,9 @@ void SettableClock::initialize(int stage)
         else
             throw cRuntimeError("Unknown defaultOverdueClockEventHandlingMode parameter value");
     }
+    else if (stage == INITSTAGE_LAST) {
+        emit(timeChangedSignal, getClockTime().asSimTime());
+    }
 }
 
 OverdueClockEventHandlingMode SettableClock::getOverdueClockEventHandlingMode(ClockEvent *event) const
@@ -71,6 +74,7 @@ void SettableClock::setClockTime(clocktime_t newClockTime, bool resetOscillator)
     Enter_Method("setClockTime");
     clocktime_t oldClockTime = getClockTime();
     if (newClockTime != oldClockTime) {
+        emit(timeChangedSignal, oldClockTime.asSimTime());
         if (resetOscillator) {
             auto constantDriftOscillator = check_and_cast<ConstantDriftOscillator *>(oscillator);
             constantDriftOscillator->setTickOffset(0);
@@ -98,6 +102,7 @@ void SettableClock::setClockTime(clocktime_t newClockTime, bool resetOscillator)
                 }
             }
         }
+        emit(timeChangedSignal, newClockTime.asSimTime());
     }
 }
 
