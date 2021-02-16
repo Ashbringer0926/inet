@@ -126,6 +126,8 @@ void EthernetMac::startFrameTransmission()
         frame->insertAtFront(bytes);
     }
     signal->encapsulate(frame);
+    ASSERT(curTxSignal == nullptr);
+    curTxSignal = signal->dup();
     send(signal, physOutGate);
 
     scheduleAt(transmissionChannel->getTransmissionFinishTime(), endTxTimer);
@@ -205,6 +207,8 @@ void EthernetMac::processMsgFromNetwork(EthernetSignalBase *signal)
 
         return;
     }
+
+    emit(receptionEndedSignal, signal);
 
     totalSuccessfulRxTime += signal->getDuration();
 
@@ -287,6 +291,9 @@ void EthernetMac::handleEndTxPeriod()
     numFramesSent++;
     numBytesSent += currentTxFrame->getByteLength();
     emit(packetSentToLowerSignal, currentTxFrame); // consider: emit with start time of frame
+
+    emit(transmissionEndedSignal, curTxSignal);
+    txFinished();
 
     const auto& header = currentTxFrame->peekAtFront<EthernetMacHeader>();
     if (header->getTypeOrLength() == ETHERTYPE_FLOW_CONTROL) {
