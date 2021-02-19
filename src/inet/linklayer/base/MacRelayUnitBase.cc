@@ -83,7 +83,7 @@ void MacRelayUnitBase::sendPacket(Packet *packet, const MacAddress& destinationA
     packet->addTagIfAbsent<DirectionTag>()->setDirection(DIRECTION_OUTBOUND);
     packet->addTagIfAbsent<InterfaceReq>()->setInterfaceId(outgoingInterface->getInterfaceId());
     auto protocol = outgoingInterface->getProtocol();
-    if (protocol != nullptr)
+    if (protocol != nullptr && packet->getTag<PacketProtocolTag>()->getProtocol() != protocol)
         packet->addTagIfAbsent<DispatchProtocolReq>()->setProtocol(protocol);
     else
         packet->removeTagIfPresent<DispatchProtocolReq>();
