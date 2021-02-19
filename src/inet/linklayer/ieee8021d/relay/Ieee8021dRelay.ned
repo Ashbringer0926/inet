@@ -37,7 +37,7 @@ import inet.linklayer.contract.IMacRelayUnit;
 simple Ieee8021dRelay extends MacRelayUnitBase like IMacRelayUnit
 {
     parameters:
-        bool hasStp;
+        object localDeliveryMacAddresses = default([]);
         @class(Ieee8021dRelay);
 }
 

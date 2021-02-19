@@ -57,9 +57,14 @@ void Ieee8021dRelay::initialize(int stage)
 {
     MacRelayUnitBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        isStpAware = par("hasStp");
         numDispatchedBDPUFrames = numDispatchedNonBPDUFrames = numDeliveredBDPUsToSTP = 0;
         numReceivedBPDUsFromSTP = numReceivedNetworkFrames = 0;
+        auto v = check_and_cast<cValueArray *>(par("localDeliveryMacAddresses").objectValue())->asStringVector();
+        for (const auto& p : v) {
+            MacAddress macAddress(p.c_str());
+            registerAddress(macAddress);
+        }
+
         WATCH(bridgeAddress);
         WATCH(numReceivedNetworkFrames);
         WATCH(numReceivedBPDUsFromSTP);
@@ -68,9 +73,6 @@ void Ieee8021dRelay::initialize(int stage)
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
         registerService(Protocol::ethernetMac, gate("upperLayerIn"), gate("upperLayerOut"));
-        // TODO FIX Move it at least to STP module (like in ANSA's CDP/LLDP)
-        if (isStpAware)
-            registerAddress(MacAddress::STP_MULTICAST_ADDRESS);
     }
 }
 
@@ -96,11 +98,9 @@ void Ieee8021dRelay::handleLowerPacket(Packet *incomingPacket)
     auto incomingInterface = interfaceTable->getInterfaceById(incomingInterfaceId);
     EV_INFO << "Processing packet from network" << EV_FIELD(incomingInterface) << EV_FIELD(incomingPacket) << EV_ENDL;
     const auto& incomingInterfaceData = incomingInterface->findProtocolData<Ieee8021dInterfaceData>();
-    if (isStpAware && incomingInterfaceData == nullptr)
-        throw cRuntimeError("Ieee8021dInterfaceData not found for interface %s", incomingInterface->getFullName());
     updatePeerAddress(incomingInterface, sourceAddress);
     // BPDU Handling
-    if (isStpAware
+    if (incomingInterfaceData
         && (destinationAddress == MacAddress::STP_MULTICAST_ADDRESS || destinationAddress == bridgeAddress)
         && incomingInterfaceData->getRole() != Ieee8021dInterfaceData::DISABLED
         && isBpdu(incomingPacket))
@@ -108,7 +108,7 @@ void Ieee8021dRelay::handleLowerPacket(Packet *incomingPacket)
         EV_DETAIL << "Deliver BPDU to the STP/RSTP module" << endl;
         sendUp(incomingPacket); // deliver to the STP/RSTP module
     }
-    else if (isStpAware && !incomingInterfaceData->isForwarding()) {
+    else if (incomingInterfaceData && !incomingInterfaceData->isForwarding()) {
         EV_INFO << "Dropping packet because the incoming interface is currently not forwarding" << EV_FIELD(incomingInterface) << EV_FIELD(incomingPacket) << endl;
         numDroppedFrames++;
         PacketDropDetails details;
@@ -194,13 +194,16 @@ void Ieee8021dRelay::handleUpperPacket(Packet *packet)
 
 bool Ieee8021dRelay::isForwardingInterface(NetworkInterface *networkInterface) const
 {
-    return MacRelayUnitBase::isForwardingInterface(networkInterface) &&
-           (!isStpAware || networkInterface->getProtocolData<Ieee8021dInterfaceData>()->isForwarding());
+    if (!MacRelayUnitBase::isForwardingInterface(networkInterface))
+        return false;
+    const auto& interfaceData = networkInterface->findProtocolData<Ieee8021dInterfaceData>();
+    return (interfaceData == nullptr || interfaceData->isForwarding());
 }
 
 void Ieee8021dRelay::updatePeerAddress(NetworkInterface *incomingInterface, MacAddress sourceAddress)
 {
-    if (!isStpAware || incomingInterface->getProtocolData<Ieee8021dInterfaceData>()->isLearning())
+    const auto& interfaceData = incomingInterface->findProtocolData<Ieee8021dInterfaceData>();
+    if (interfaceData == nullptr || interfaceData->isLearning())
         MacRelayUnitBase::updatePeerAddress(incomingInterface, sourceAddress);
 }
 
