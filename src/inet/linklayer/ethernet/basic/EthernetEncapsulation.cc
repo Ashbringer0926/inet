@@ -99,6 +99,7 @@ void EthernetEncapsulation::initialize(int stage)
 
 void EthernetEncapsulation::processCommandFromHigherLayer(Request *msg)
 {
+    msg->removeTagIfPresent<DispatchProtocolReq>();
     auto ctrl = msg->getControlInfo();
     if (dynamic_cast<Ieee802PauseCommand *>(ctrl) != nullptr)
         handleSendPause(msg);
