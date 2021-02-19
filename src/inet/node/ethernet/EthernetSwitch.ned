@@ -56,12 +56,13 @@ module EthernetSwitch
         string spanningTreeProtocol = default("Stp");
         int numEthInterfaces = default(0);  // minimum number of ethernet interfaces
         eth[*].encap.typename = default("OmittedEthernetEncapsulation");
+        eth[*].protocol = default("ethernetmac");
         *.fcsMode = fcsMode;
         **.interfaceTableModule = default(absPath(".interfaceTable"));
         **.macTableModule = default(absPath(".macTable"));
         **.clockModule = default(exists(clock) ? absPath(".clock") : "");
 
-        relayUnit.hasStp = hasStp;
+        relayUnit.localDeliveryMacAddresses = default(hasStp ? ["01:80:C2:00:00:00"] : [""]);
         encap.registerProtocol = true;
         eth[*].mac.promiscuous = default(true);
         ethernet.*.promiscuous = default(true);
