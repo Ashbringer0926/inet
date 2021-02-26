@@ -13,13 +13,13 @@ import inet.node.inet.StandardHost;
 module GPtpEndstation extends StandardHost
 {
     parameters:
-        eth[*].typename = "EthernetInterfaceGPTP";
+        clock.typename = default("SettableClock");
     submodules:
-        clockGPTP: Clock {
-            @display("p=125,738");
+        gPtp: GPtp {
+            @display("p=700.11755,75.166");
         }
-        tableGPTP: TableGPTP {
-            @display("p=558,259");
-        }
+    connections:
+        gPtp.socketOut --> at.in++;
+        at.out++ --> gPtp.socketIn;
 }
 

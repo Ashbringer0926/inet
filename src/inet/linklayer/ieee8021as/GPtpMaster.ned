@@ -7,15 +7,13 @@
 
 package inet.linklayer.ieee8021as;
 
-module GPtpSlave extends GPtpEndstation
+module GPtpMaster extends GPtpEndstation
 {
     parameters:
         @display("i=device/pc2");
-        string nodeType = default("SlaveNode");
         forwarding = default(false);  // disable routing by default
         networkLayer.proxyARP = default(false);
 
-        // 11 - Grandmaster, 12 - Bridge, 13 - Slave
-        int gPtpNodeType = 13;
+        gPtp.gPtpNodeType = "MASTER_NODE"; // @enum("gPtpNodeType"): MASTER_NODE, BRIDGE_NODE, SLAVE_NODE
     connections allowunconnected:
 }
