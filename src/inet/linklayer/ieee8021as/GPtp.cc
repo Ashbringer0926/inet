@@ -225,6 +225,7 @@ void GPtp::sendSync()
         originTimestamp = clock->getClockTime();
     }
     gptp->setOriginTimestamp(CLOCKTIME_ZERO);
+    gptp->setSequenceId(sequenceId++);
 
     sentTimeSyncSync = clock->getClockTime();
     packet->insertAtFront(gptp);
@@ -236,12 +237,13 @@ void GPtp::sendSync()
     // The sendFollowUp(portId) called by receiveSignal(), when GPtpSync sent
 }
 
-void GPtp::sendFollowUp(int portId, clocktime_t preciseOriginTimestamp)
+void GPtp::sendFollowUp(int portId, const GPtpSync *sync, clocktime_t preciseOriginTimestamp)
 {
     auto packet = new Packet("GPtpFollowUp");
     packet->addTag<MacAddressReq>()->setDestAddress(GPTP_MULTICAST_ADDRESS);
     auto gptp = makeShared<GPtpFollowUp>();
     gptp->setPreciseOriginTimestamp(preciseOriginTimestamp);
+    gptp->setSequenceId(sync->getSequenceId());
 
     if (gPtpNodeType == MASTER_NODE)
         gptp->setCorrectionField(CLOCKTIME_ZERO);
@@ -299,7 +301,8 @@ void GPtp::sendPdelayReq()
     portId.clockIdentity = getId();
     portId.portNumber = slavePortId;
     gptp->setSourcePortIdentity(portId);
-    gptp->setSequenceId(++pdelaySequenceId);
+    lastSentPdelayReqSequenceId = sequenceId++;
+    gptp->setSequenceId(lastSentPdelayReqSequenceId);
     packet->insertAtFront(gptp);
     pdelayReqEventEgressTimestamp = clock->getClockTime();
     rcvdPdelayResp = false;
@@ -309,14 +312,27 @@ void GPtp::sendPdelayReq()
 
 void GPtp::processSync(Packet *packet, const GPtpSync* gptp)
 {
-    // TODO save sender info, seq. ID
+    rcvdGPtpSync = true;
+    lastReceivedGPtpSyncSequenceId = gptp->getSequenceId();
+
     peerSentTimeSync = gptp->getOriginTimestamp();  // TODO this is unfilled in two-step mode
     syncIngressTimestamp = packet->getTag<GPtpIngressTimeInd>()->getArrivalClockTime();
 }
 
 void GPtp::processFollowUp(Packet *packet, const GPtpFollowUp* gptp)
 {
-    // TODO check: is received the GPtpSync for this GPtpFollowUp?
+    // check: is received the GPtpSync for this GPtpFollowUp?
+    if (!rcvdGPtpSync) {
+        EV_WARN << "GPtpFollowUp arrived without GPtpSync, dropped";
+        return;
+    }
+    // verify IDs
+    if (gptp->getSequenceId() != lastReceivedGPtpSyncSequenceId) {
+        EV_WARN << "GPtpFollowUp arrived with invalid sequence ID, dropped";
+        return;
+    }
+
+
     peerSentTimeSync = gptp->getPreciseOriginTimestamp();
     correctionField = gptp->getCorrectionField();
     receivedRateRatio = gptp->getRateRatio();
@@ -328,14 +344,17 @@ void GPtp::processFollowUp(Packet *packet, const GPtpFollowUp* gptp)
     EV_INFO << "ORIGIN TIME SYNC         - " << originTimestamp << endl;
     EV_INFO << "CORRECTION FIELD         - " << correctionField << endl;
     EV_INFO << "PROPAGATION DELAY        - " << peerDelay << endl;
+
+    rcvdGPtpSync = false;
 }
 
 void GPtp::synchronize()
 {
+    simtime_t now = simTime();
     clocktime_t origNow = clock->getClockTime();
     clocktime_t residenceTime = origNow - syncIngressTimestamp;
 
-    emit(timeDifferenceSignal, CLOCKTIME_AS_SIMTIME(origNow) - simTime());
+    emit(timeDifferenceSignal, CLOCKTIME_AS_SIMTIME(origNow) - now);
 
     /************** Time synchronization *****************************************
      * Local time is adjusted using peer delay, correction field, residence time *
@@ -346,11 +365,12 @@ void GPtp::synchronize()
     check_and_cast<SettableClock *>(clock)->setClockTime(newTime);
 
     // TODO computeGmRateRatio:
-    gmRateRatio = (origNow - newLocalTimeAtTimeSync) / (clock->getClockTime() - receivedTimeSync);
+    gmRateRatio = (origNow - newLocalTimeAtTimeSync) / (syncIngressTimestamp - receivedTimeSync);
+    gmRateRatio = 1.0 / gmRateRatio;
 
     oldLocalTimeAtTimeSync = origNow;
     newLocalTimeAtTimeSync = clock->getClockTime();
-    receivedTimeSync = newLocalTimeAtTimeSync;
+    receivedTimeSync = syncIngressTimestamp;
 
     // adjust local timestamps, too
     pdelayReqEventEgressTimestamp += newLocalTimeAtTimeSync - oldLocalTimeAtTimeSync;
@@ -361,16 +381,17 @@ void GPtp::synchronize()
 
     EV_INFO << "############## SYNC #####################################"<< endl;
     EV_INFO << "RECEIVED TIME AFTER SYNC   - " << newLocalTimeAtTimeSync << endl;
-    EV_INFO << "RECEIVED SIM TIME          - " << simTime() << endl;
+    EV_INFO << "RECEIVED SIM TIME          - " << now << endl;
     EV_INFO << "ORIGIN TIME SYNC           - " << peerSentTimeSync << endl;
     EV_INFO << "RESIDENCE TIME             - " << residenceTime << endl;
     EV_INFO << "CORRECTION FIELD           - " << correctionField << endl;
     EV_INFO << "PROPAGATION DELAY          - " << peerDelay << endl;
-    EV_INFO << "TIME DIFFERENCE TO SIMTIME - " << CLOCKTIME_AS_SIMTIME(newLocalTimeAtTimeSync) - simTime() << endl;
+    EV_INFO << "TIME DIFFERENCE TO SIMTIME - " << CLOCKTIME_AS_SIMTIME(newLocalTimeAtTimeSync) - now << endl;
+    EV_INFO << "RATE RATIO                 - " << gmRateRatio << endl;
 
     emit(rateRatioSignal, gmRateRatio);
     emit(localTimeSignal, CLOCKTIME_AS_SIMTIME(newLocalTimeAtTimeSync));
-    emit(timeDifferenceSignal, CLOCKTIME_AS_SIMTIME(newLocalTimeAtTimeSync) - simTime());
+    emit(timeDifferenceSignal, CLOCKTIME_AS_SIMTIME(newLocalTimeAtTimeSync) - now);
 }
 
 void GPtp::processPdelayReq(Packet *packet, const GPtpPdelayReq* gptp)
@@ -393,7 +414,7 @@ void GPtp::processPdelayResp(Packet *packet, const GPtpPdelayResp* gptp)
         EV_WARN << "GPtpPdelayResp arrived with invalid PortIdentity, dropped";
         return;
     }
-    if (gptp->getSequenceId() != pdelaySequenceId) {
+    if (gptp->getSequenceId() != lastSentPdelayReqSequenceId) {
         EV_WARN << "GPtpPdelayResp arrived with invalid sequence ID, dropped";
         return;
     }
@@ -415,7 +436,7 @@ void GPtp::processPdelayRespFollowUp(Packet *packet, const GPtpPdelayRespFollowU
         EV_WARN << "GPtpPdelayRespFollowUp arrived with invalid PortIdentity, dropped";
         return;
     }
-    if (gptp->getSequenceId() != pdelaySequenceId) {
+    if (gptp->getSequenceId() != lastSentPdelayReqSequenceId) {
         EV_WARN << "GPtpPdelayRespFollowUp arrived with invalid sequence ID, dropped";
         return;
     }
@@ -423,8 +444,9 @@ void GPtp::processPdelayRespFollowUp(Packet *packet, const GPtpPdelayRespFollowU
     peerResponseOriginTimestamp = gptp->getResponseOriginTimestamp();
 
     // computePropTime():
-    peerDelay = (gmRateRatio * (pdelayRespEventIngressTimestamp - pdelayReqEventEgressTimestamp) - (peerRequestReceiptTimestamp - peerResponseOriginTimestamp)) / 2.0;
+    peerDelay = (gmRateRatio * (pdelayRespEventIngressTimestamp - pdelayReqEventEgressTimestamp) - (peerResponseOriginTimestamp - peerRequestReceiptTimestamp)) / 2.0;
 
+    EV_INFO << "RATE RATIO                       - " << gmRateRatio << endl;
     EV_INFO << "pdelayReqEventEgressTimestamp    - " << pdelayReqEventEgressTimestamp << endl;
     EV_INFO << "peerResponseOriginTimestamp      - " << peerResponseOriginTimestamp << endl;
     EV_INFO << "pdelayRespEventIngressTimestamp  - " << pdelayRespEventIngressTimestamp << endl;
@@ -464,9 +486,11 @@ void GPtp::receiveSignal(cComponent *source, simsignal_t signal, cObject *obj, c
                             sendPdelayRespFollowUp(portId, gptpResp.get());
                             break;
                         }
-                        case GPTPTYPE_SYNC:
-                            sendFollowUp(portId, clock->getClockTime());
+                        case GPTPTYPE_SYNC: {
+                            auto gptpSync = dynamicPtrCast<const GPtpSync>(gptp);
+                            sendFollowUp(portId, gptpSync.get(), clock->getClockTime());
                             break;
+                        }
                         case GPTPTYPE_PDELAY_REQ:
                             if (portId == slavePortId)
                                 pdelayReqEventEgressTimestamp = clock->getClockTime();

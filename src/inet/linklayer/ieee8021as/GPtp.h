@@ -51,8 +51,9 @@ class GPtp : public ClockUserModuleBase
     clocktime_t syncInterval;
     clocktime_t pdelayInterval;
 
+    uint16_t sequenceId = 0;
     /* Slave port - Variables is used for Peer Delay Measurement */
-    uint16_t pdelaySequenceId = 0;
+    uint16_t lastSentPdelayReqSequenceId = 0;
     clocktime_t peerDelay;
     clocktime_t peerRequestReceiptTimestamp;  // pdelayReqIngressTimestamp from peer (received in GPtpPdelayResp)
     clocktime_t peerResponseOriginTimestamp; // pdelayRespEgressTimestamp from peer (received in GPtpPdelayRespFollowUp)
@@ -70,6 +71,9 @@ class GPtp : public ClockUserModuleBase
     clocktime_t peerSentTimeSync;  // sending time of last received GPtpSync
     clocktime_t peerSentTimeSyncEgressTimestamp;  // sending time of last received GPtpSync
     clocktime_t syncIngressTimestamp;  // receiving time of last incoming GPtpSync
+
+    bool rcvdGPtpSync = false;
+    uint16_t lastReceivedGPtpSyncSequenceId = 0xffff;
 
     // self timers:
     ClockEvent* selfMsgSync = nullptr;
@@ -96,7 +100,7 @@ class GPtp : public ClockUserModuleBase
     void sendPacketToNIC(Packet *packet, int portId);
 
     void sendSync();
-    void sendFollowUp(int portId, clocktime_t preciseOriginTimestamp);
+    void sendFollowUp(int portId, const GPtpSync *sync, clocktime_t preciseOriginTimestamp);
     void sendPdelayReq();
     void sendPdelayResp(GPtpReqAnswerEvent *req);
     void sendPdelayRespFollowUp(int portId, const GPtpPdelayResp* resp);
