@@ -14,6 +14,8 @@
 
 package inet.examples.ethernet.clocksynchronization;
 
+import inet.linklayer.ieee8021as.GPtpBridge;
+import inet.linklayer.ieee8021as.GPtpEndstation;
 import inet.networks.WiredNetworkBase;
 import inet.node.ethernet.Eth1G;
 import inet.node.ethernet.EthernetSwitch;
@@ -23,6 +25,7 @@ import inet.queueing.contract.IPacketGate;
 import inet.queueing.contract.IPacketQueue;
 import inet.queueing.contract.IPacketScheduler;
 import inet.queueing.queue.CompoundPacketQueueBase;
+
 
 module ClockSynchronizationExampleQueue extends CompoundPacketQueueBase
 {
@@ -86,3 +89,33 @@ network ClockSynchronizationExampleNetwork extends WiredNetworkBase
         switch2.ethg++ <--> Eth1G <--> sink1.ethg++;
         switch2.ethg++ <--> Eth1G <--> sink2.ethg++;
 }
+
+network ClockSynchronizationGptpExampleNetwork extends WiredNetworkBase
+{
+    submodules:
+        source1: GPtpEndstation {
+            @display("p=300,100");
+        }
+        source2: GPtpEndstation {
+            @display("p=300,300");
+        }
+        switch1: GPtpBridge {
+            @display("p=500,200");
+        }
+        switch2: GPtpBridge {
+            @display("p=700,200");
+        }
+        sink1: StandardHost {
+            @display("p=900,100");
+        }
+        sink2: StandardHost {
+            @display("p=900,300");
+        }
+    connections:
+        switch1.ethg++ <--> Eth1G <--> switch2.ethg++;
+        source1.ethg++ <--> Eth1G <--> switch1.ethg++;
+        source2.ethg++ <--> Eth1G <--> switch1.ethg++;
+        switch2.ethg++ <--> Eth1G <--> sink1.ethg++;
+        switch2.ethg++ <--> Eth1G <--> sink2.ethg++;
+}
+
