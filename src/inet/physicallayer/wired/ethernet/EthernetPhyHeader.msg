@@ -18,6 +18,16 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+cplusplus {{
+#include "inet/common/Units.h"
+
+namespace inet {
+using namespace inet::units::values;
+const B ETHERNET_PHY_HEADER_LEN = B(8);
+}
+
+}}
+
 namespace inet::physicallayer;
 
 //
@@ -26,7 +36,7 @@ namespace inet::physicallayer;
 //
 class EthernetPhyHeaderBase extends FieldsChunk
 {
-    chunkLength = B(8);
+    chunkLength = ETHERNET_PHY_HEADER_LEN;
 }
 
 //
