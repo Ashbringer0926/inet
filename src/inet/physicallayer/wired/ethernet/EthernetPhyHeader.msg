@@ -19,13 +19,7 @@ import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
 cplusplus {{
-#include "inet/common/Units.h"
-
-namespace inet {
-using namespace inet::units::values;
-const B ETHERNET_PHY_HEADER_LEN = B(8);
-}
-
+#include "inet/physicallayer/wired/ethernet/EthernetPhyConstants.h"
 }}
 
 namespace inet::physicallayer;
