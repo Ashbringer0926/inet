@@ -32,9 +32,9 @@
 #endif // if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__) || defined(_WIN64)
 
 #ifdef __linux__
-#define UI_REFRESH_TIME    100000 /* refresh time of the UI in us */
+#define UI_REFRESH_TIME_NS    100000000 /* refresh time of the UI in ns */
 #else
-#define UI_REFRESH_TIME    500
+#define UI_REFRESH_TIME_NS    500000
 #endif
 
 namespace inet {
@@ -93,13 +93,13 @@ void RealTimeScheduler::advanceSimTime()
     sim->setSimTime(t);
 }
 
-bool RealTimeScheduler::receiveWithTimeout(long usec)
+bool RealTimeScheduler::receiveWithTimeout(long nsec)
 {
 #ifdef __linux__
     bool found = false;
     timeval timeout;
     timeout.tv_sec = 0;
-    timeout.tv_usec = usec;
+    timeout.tv_usec = nsec/1000;
 
     int32_t fdVec[FD_SETSIZE], maxfd;
     fd_set rdfds;
@@ -125,7 +125,7 @@ bool RealTimeScheduler::receiveWithTimeout(long usec)
     bool found = false;
     timeval timeout;
     timeout.tv_sec = 0;
-    timeout.tv_usec = usec;
+    timeout.tv_usec = nsec/1000;
     advanceSimTime();
     for (uint16_t i = 0; i < callbackEntries.size(); i++) {
         if (callbackEntries.at(i).callback->notify(callbackEntries.at(i).fd))
@@ -137,24 +137,24 @@ bool RealTimeScheduler::receiveWithTimeout(long usec)
 #endif
 }
 
-int RealTimeScheduler::receiveUntil(int64_t targetTime)
+int RealTimeScheduler::receiveUntil(int64_t targetTime_ns)
 {
-    // if there's more than 2*UI_REFRESH_TIME to wait, wait in UI_REFRESH_TIME chunks
+    // if there's more than 2*UI_REFRESH_TIME_NS to wait, wait in UI_REFRESH_TIME_NS chunks
     // in order to keep UI responsiveness by invoking getEnvir()->idle()
-    int64_t curTime = opp_get_monotonic_clock_nsecs();
+    int64_t curTime_ns = opp_get_monotonic_clock_nsecs();
 
-    while ((targetTime - curTime) >= 2 * UI_REFRESH_TIME * 1000) {   // us --> ns
-        if (receiveWithTimeout(UI_REFRESH_TIME))
+    while ((targetTime_ns - curTime_ns) >= 2 * UI_REFRESH_TIME_NS) {
+        if (receiveWithTimeout(UI_REFRESH_TIME_NS))
             return 1;
         if (getEnvir()->idle())
             return -1;
-        curTime = opp_get_monotonic_clock_nsecs();
+        curTime_ns = opp_get_monotonic_clock_nsecs();
     }
 
-    // difference is now at most UI_REFRESH_TIME, do it at once
-    int64_t remaining = targetTime - curTime;
-    if (remaining > 0)
-        if (receiveWithTimeout(remaining / 1000))  // ns --> us
+    // difference is now at most UI_REFRESH_TIME_NS, do it at once
+    int64_t remaining_ns = targetTime_ns - curTime_ns;
+    if (remaining_ns > 0)
+        if (receiveWithTimeout(remaining_ns))
             return 1;
     return 0;
 }
@@ -167,24 +167,24 @@ cEvent *RealTimeScheduler::guessNextEvent()
 
 cEvent *RealTimeScheduler::takeNextEvent()
 {
-    int64_t targetTime;
+    int64_t targetTime_ns;
 
     // calculate target time
     cEvent *event = sim->getFES()->peekFirst();
     if (!event)
         // as far into the future as reasonable (hoping we will never overflow - it is unlikely)
-        targetTime = INT64_MAX;
+        targetTime_ns = INT64_MAX;
     else {
         // use time of next event
         simtime_t eventSimtime = event->getArrivalTime();
-        targetTime = baseTime + eventSimtime.inUnit(SIMTIME_NS);
+        targetTime_ns = baseTime + eventSimtime.inUnit(SIMTIME_NS);
     }
 
     // if needed, wait until that time arrives
-    int64_t curTime = opp_get_monotonic_clock_nsecs();
+    int64_t curTime_ns = opp_get_monotonic_clock_nsecs();
 
-    if (targetTime > curTime) {
-        int status = receiveUntil(targetTime);
+    if (targetTime_ns > curTime_ns) {
+        int status = receiveUntil(targetTime_ns);
         if (status == -1)
             return nullptr; // interrupted by user
         if (status == 1)
@@ -193,8 +193,8 @@ cEvent *RealTimeScheduler::takeNextEvent()
     else {
         // we're behind -- customized versions of this class may
         // alert if we're too much behind, whatever that means
-        int64_t diffTime = curTime - targetTime;
-        EV << "We are behind: " << diffTime * 1e-9 << " seconds\n";
+        int64_t diffTime_ns = curTime_ns - targetTime_ns;
+        EV << "We are behind: " << diffTime_ns * 1e-9 << " seconds\n";
     }
     cEvent *tmp = sim->getFES()->removeFirst();
     ASSERT(tmp == event);

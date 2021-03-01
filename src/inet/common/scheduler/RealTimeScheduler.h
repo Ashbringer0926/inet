@@ -61,7 +61,7 @@ class INET_API RealTimeScheduler : public cScheduler
   protected:
     virtual void advanceSimTime();
     virtual bool receiveWithTimeout(long usec);
-    virtual int receiveUntil(int64_t targetTime); // in nanoseconds, as returned by opp_get_monotonic_clock_nsecs()
+    virtual int receiveUntil(int64_t targetTime_ns); // in nanoseconds, as returned by opp_get_monotonic_clock_nsecs()
 
   public:
     RealTimeScheduler();
