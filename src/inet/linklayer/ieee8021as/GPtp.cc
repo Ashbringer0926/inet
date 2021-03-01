@@ -112,9 +112,7 @@ void GPtp::initialize(int stage)
             // without depending on node type which is grandmaster or bridge
             selfMsgDelayReq = new ClockEvent("selfMsgPdelay", GPTP_SELF_MSG_PDELAY_REQ);
             pdelayInterval = par("pdelayInterval");
-
-            schedulePdelay = pdelayInterval;
-            scheduleClockEventAfter(schedulePdelay, selfMsgDelayReq);
+            scheduleClockEventAfter(pdelayInterval, selfMsgDelayReq);
         }
     }
 }

@@ -36,18 +36,6 @@ class GPtp : public ClockUserModuleBase
 
     clocktime_t receivedTimeSync;
 
-    /* time to receive Sync message before synchronize local time with master */
-    clocktime_t timeBeforeSync;
-
-    // This is used to calculate residence time within time-aware system
-    // Its value has the time receiving Sync message from master port of other system
-    clocktime_t receivedTimeAtHandleMessage;
-
-    // Adjusted time when Sync received
-    // For constant drift, setTime = sentTime + delay
-    clocktime_t setTime;
-
-    clocktime_t schedulePdelay;
     clocktime_t syncInterval;
     clocktime_t pdelayInterval;
 
@@ -69,7 +57,6 @@ class GPtp : public ClockUserModuleBase
     clocktime_t newLocalTimeAtTimeSync;
     clocktime_t oldLocalTimeAtTimeSync;
     clocktime_t peerSentTimeSync;  // sending time of last received GPtpSync
-    clocktime_t peerSentTimeSyncEgressTimestamp;  // sending time of last received GPtpSync
     clocktime_t syncIngressTimestamp;  // receiving time of last incoming GPtpSync
 
     bool rcvdGPtpSync = false;
