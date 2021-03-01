@@ -38,9 +38,6 @@ void SettableClock::initialize(int stage)
         else
             throw cRuntimeError("Unknown defaultOverdueClockEventHandlingMode parameter value");
     }
-    else if (stage == INITSTAGE_LAST) {
-        emit(timeChangedSignal, getClockTime().asSimTime());
-    }
 }
 
 OverdueClockEventHandlingMode SettableClock::getOverdueClockEventHandlingMode(ClockEvent *event) const
