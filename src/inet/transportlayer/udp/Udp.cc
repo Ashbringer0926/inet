@@ -74,14 +74,70 @@ Udp::~Udp()
     clearAllSockets();
 }
 
+void Udp::refreshCrcModeFromPar()
+{
+    const char *crcModeString = par("crcMode");
+    crcMode = parseCrcMode(crcModeString, true);
+    if (crcMode == CRC_COMPUTED) {
+        if (crcInsertion == nullptr) {
+            cModuleType *moduleType = cModuleType::get("inet.transportlayer.udp.UdpCrcInsertionHook");
+            crcInsertion = check_and_cast<UdpCrcInsertionHook *>(moduleType->create("crcInsertion", this));
+            crcInsertion->finalizeParameters();
+            crcInsertion->callInitialize();
+        }
+        // TODO
+        // Unlike IPv4, when UDP packets are originated by an IPv6 node,
+        // the UDP checksum is not optional.  That is, whenever
+        // originating a UDP packet, an IPv6 node must compute a UDP
+        // checksum over the packet and the pseudo-header, and, if that
+        // computation yields a result of zero, it must be changed to hex
+        // FFFF for placement in the UDP header.  IPv6 receivers must
+        // discard UDP packets containing a zero checksum, and should log
+        // the error.
+#ifdef INET_WITH_IPv4
+        auto ipv4 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv4.ip"));
+        if (ipv4 != nullptr && !crcInsertion->isRegisteredHook(ipv4))
+            ipv4->registerHook(0, crcInsertion);
+#endif
+#ifdef INET_WITH_IPv6
+        auto ipv6 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv6.ipv6"));
+        if (ipv6 != nullptr && !crcInsertion->isRegisteredHook(ipv6))
+            ipv6->registerHook(0, crcInsertion);
+#endif
+    }
+    else {
+#ifdef INET_WITH_IPv4
+        auto ipv4 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv4.ip"));
+        if (ipv4 != nullptr && crcInsertion != nullptr && crcInsertion->isRegisteredHook(ipv4))
+            ipv4->unregisterHook(crcInsertion);
+#endif
+#ifdef INET_WITH_IPv6
+        auto ipv6 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv6.ipv6"));
+        if (ipv6 != nullptr && crcInsertion != nullptr && crcInsertion->isRegisteredHook(ipv6))
+            ipv6->unregisterHook(crcInsertion);
+#endif
+    }
+}
+
+void Udp::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize:
+        refreshCrcModeFromPar();
+        ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
+    }
+    else if (!strcmp(name, "crcMode")) {
+        refreshCrcModeFromPar();
+    }
+    else
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void Udp::initialize(int stage)
 {
     OperationalBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        const char *crcModeString = par("crcMode");
-        crcMode = parseCrcMode(crcModeString, true);
-
         lastEphemeralPort = EPHEMERAL_PORTRANGE_START;
         ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
         icmp = nullptr;
@@ -101,32 +157,6 @@ void Udp::initialize(int stage)
         WATCH_MAP(socketsByPortMap);
     }
     else if (stage == INITSTAGE_TRANSPORT_LAYER) {
-        if (crcMode == CRC_COMPUTED) {
-            cModuleType *moduleType = cModuleType::get("inet.transportlayer.udp.UdpCrcInsertionHook");
-            auto crcInsertion = check_and_cast<UdpCrcInsertionHook *>(moduleType->create("crcInsertion", this));
-            crcInsertion->finalizeParameters();
-            crcInsertion->callInitialize();
-
-            // TODO
-            // Unlike IPv4, when UDP packets are originated by an IPv6 node,
-            // the UDP checksum is not optional.  That is, whenever
-            // originating a UDP packet, an IPv6 node must compute a UDP
-            // checksum over the packet and the pseudo-header, and, if that
-            // computation yields a result of zero, it must be changed to hex
-            // FFFF for placement in the UDP header.  IPv6 receivers must
-            // discard UDP packets containing a zero checksum, and should log
-            // the error.
-#ifdef INET_WITH_IPv4
-            auto ipv4 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv4.ip"));
-            if (ipv4 != nullptr)
-                ipv4->registerHook(0, crcInsertion);
-#endif
-#ifdef INET_WITH_IPv6
-            auto ipv6 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv6.ipv6"));
-            if (ipv6 != nullptr)
-                ipv6->registerHook(0, crcInsertion);
-#endif
-        }
         registerService(Protocol::udp, gate("appIn"), gate("appOut"));
         registerProtocol(Protocol::udp, gate("ipOut"), gate("ipIn"));
     }

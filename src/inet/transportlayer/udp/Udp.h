@@ -115,6 +115,7 @@ class INET_API Udp : public TransportProtocolBase
 
   protected:
     CrcMode crcMode = CRC_MODE_UNDEFINED;
+    UdpCrcInsertionHook *crcInsertion = nullptr;
 
     // sockets
     SocketsByIdMap socketsByIdMap;
@@ -212,6 +213,8 @@ class INET_API Udp : public TransportProtocolBase
   protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
+    virtual void handleParameterChange(const char *name) override;
+    virtual void refreshCrcModeFromPar();
 };
 
 } // namespace inet
