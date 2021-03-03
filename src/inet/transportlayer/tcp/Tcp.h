@@ -126,6 +126,7 @@ class INET_API Tcp : public TransportProtocolBase
     typedef std::map<SockPair, TcpConnection *> TcpConnMap;
     TcpAppConnMap tcpAppConnMap;
     TcpConnMap tcpConnMap;
+    TcpCrcInsertionHook *crcInsertion = nullptr;
 
     ushort lastEphemeralPort = static_cast<ushort>(-1);
     std::multiset<ushort> usedEphemeralPorts;
@@ -158,6 +159,8 @@ class INET_API Tcp : public TransportProtocolBase
     virtual void handleUpperCommand(cMessage *message) override;
     virtual void handleUpperPacket(Packet *packet) override;
     virtual void handleLowerPacket(Packet *packet) override;
+    virtual void handleParameterChange(const char *name) override;
+    virtual void refreshCrcModeFromPar();
 
   public:
     /**

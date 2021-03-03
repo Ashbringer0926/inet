@@ -56,19 +56,71 @@ Tcp::~Tcp()
 {
 }
 
+void Tcp::refreshCrcModeFromPar()
+{
+    const char *crcModeString = par("crcMode");
+    crcMode = parseCrcMode(crcModeString, true);
+    if (crcMode == CRC_COMPUTED) {
+        if (crcInsertion == nullptr) {
+            cModuleType *moduleType = cModuleType::get("inet.transportlayer.tcp_common.TcpCrcInsertionHook");
+            crcInsertion = check_and_cast<TcpCrcInsertionHook *>(moduleType->create("crcInsertion", this));
+            crcInsertion->finalizeParameters();
+            crcInsertion->callInitialize();
+
+        }
+#ifdef INET_WITH_IPv4
+        auto ipv4 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv4.ip"));
+        if (ipv4 != nullptr && !crcInsertion->isRegisteredHook(ipv4))
+            ipv4->registerHook(0, crcInsertion);
+#endif
+#ifdef INET_WITH_IPv6
+        auto ipv6 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv6.ipv6"));
+        if (ipv6 != nullptr && !crcInsertion->isRegisteredHook(ipv6))
+            ipv6->registerHook(0, crcInsertion);
+#endif
+    }
+    else {
+#ifdef INET_WITH_IPv4
+        auto ipv4 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv4.ip"));
+        if (ipv4 != nullptr && crcInsertion != nullptr && crcInsertion->isRegisteredHook(ipv4))
+            ipv4->unregisterHook(crcInsertion);
+#endif
+#ifdef INET_WITH_IPv6
+        auto ipv6 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv6.ipv6"));
+        if (ipv6 != nullptr && crcInsertion != nullptr && crcInsertion->isRegisteredHook(ipv6))
+            ipv6->unregisterHook(crcInsertion);
+#endif
+    }
+}
+
+void Tcp::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize only:
+    }
+    if (name == nullptr || !strcmp(name, "crcMode")) {
+        refreshCrcModeFromPar();
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "msl")) {
+        msl = par("msl");
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "useDataNotification")) {
+        useDataNotification = par("useDataNotification");
+        if (name) return;
+    }
+//    if (wrong)
+//        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
+
 void Tcp::initialize(int stage)
 {
     OperationalBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        const char *crcModeString = par("crcMode");
-        crcMode = parseCrcMode(crcModeString, false);
-
         lastEphemeralPort = EPHEMERAL_PORTRANGE_START;
-
-        msl = par("msl");
-        useDataNotification = par("useDataNotification");
-
         WATCH(lastEphemeralPort);
         WATCH_PTRMAP(tcpConnMap);
         WATCH_PTRMAP(tcpAppConnMap);
@@ -76,23 +128,6 @@ void Tcp::initialize(int stage)
     else if (stage == INITSTAGE_TRANSPORT_LAYER) {
         registerService(Protocol::tcp, gate("appIn"), gate("appOut"));
         registerProtocol(Protocol::tcp, gate("ipOut"), gate("ipIn"));
-        if (crcMode == CRC_COMPUTED) {
-            cModuleType *moduleType = cModuleType::get("inet.transportlayer.tcp_common.TcpCrcInsertionHook");
-            auto crcInsertion = check_and_cast<TcpCrcInsertionHook *>(moduleType->create("crcInsertion", this));
-            crcInsertion->finalizeParameters();
-            crcInsertion->callInitialize();
-
-#ifdef INET_WITH_IPv4
-            auto ipv4 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv4.ip"));
-            if (ipv4 != nullptr)
-                ipv4->registerHook(0, crcInsertion);
-#endif
-#ifdef INET_WITH_IPv6
-            auto ipv6 = dynamic_cast<INetfilter *>(findModuleByPath("^.ipv6.ipv6"));
-            if (ipv6 != nullptr)
-                ipv6->registerHook(0, crcInsertion);
-#endif
-        }
     }
 }
 
