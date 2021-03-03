@@ -32,13 +32,27 @@ PreemptableStreamer::~PreemptableStreamer()
     cancelAndDeleteClockEvent(endStreamingTimer);
 }
 
+void PreemptableStreamer::handleParameterChange(const char *name)
+{
+    if (name == nullptr || !strcmp(name, "datarate")) {
+        datarate = bps(par("datarate"));
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "minPacketLength")) {
+        minPacketLength = b(par("minPacketLength"));
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "roundingLength")) {
+        roundingLength = b(par("roundingLength"));
+        if (name) return;
+    }
+    ClockUserModuleMixin<PacketProcessorBase>::handleParameterChange(name);
+}
+
 void PreemptableStreamer::initialize(int stage)
 {
     ClockUserModuleMixin::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        datarate = bps(par("datarate"));
-        minPacketLength = b(par("minPacketLength"));
-        roundingLength = b(par("roundingLength"));
         inputGate = gate("in");
         outputGate = gate("out");
         producer = findConnectedModule<IActivePacketSource>(inputGate);

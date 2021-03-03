@@ -57,15 +57,8 @@ simple WiseRoute extends NetworkProtocolBase like INetworkProtocol
     parameters:
         int headerLength @unit(b) = default(96b); // length of the network packet header (in bits)
 
-        // debug switch
-        bool debug = default(false);
-        bool trace = default(false);
-        bool useSimTracer = default(false);
-
         // sink node address
         string sinkAddress;
-        // the sink directs the tree building procedure with periodic floods.
-        // iterationDelay is the period between two floods.
 
         // RSSI threshold for route selection
         double rssiThreshold @unit(dBm) = default(-50 dBm);

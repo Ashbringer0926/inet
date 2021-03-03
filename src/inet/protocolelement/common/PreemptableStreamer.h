@@ -51,6 +51,7 @@ class INET_API PreemptableStreamer : public ClockUserModuleMixin<PacketProcessor
   protected:
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *message) override;
+    virtual void handleParameterChange(const char *name) override;
 
     virtual bool isStreaming() const { return streamedPacket != nullptr; }
     virtual void endStreaming();

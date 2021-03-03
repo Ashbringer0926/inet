@@ -38,9 +38,10 @@ package inet.networklayer.diffserv;
 // a packet that was colored by a previous marker to a lesser
 // conforming color.
 //
-simple TwoRateThreeColorMeter
+simple TwoRateThreeColorMeter extends PacketMeterBase
 {
     parameters:
+        @class(TwoRateThreeColorMeter);
         @display("i=block/timer");
         string interfaceTableModule;   // The path to the InterfaceTable module
         string pir;       // peak information rate, either absolute bitrate (e.g. "100kbps"), or relative to the link's datarate (e.g. "20%")
@@ -49,7 +50,6 @@ simple TwoRateThreeColorMeter
         int cbs @unit(B); // committed burst size
         bool colorAwareMode = default(false); // enables color-aware mode
     gates:
-        input in;
         output greenOut;
         output yellowOut;
         output redOut;

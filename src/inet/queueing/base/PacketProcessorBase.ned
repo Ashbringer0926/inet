@@ -28,6 +28,6 @@ package inet.queueing.base;
 simple PacketProcessorBase
 {
     parameters:
-        string displayStringTextFormat = default("processed %p pk (%l)"); // determines the text that is written on top of the submodule
+        string displayStringTextFormat @mutable = default("processed %p pk (%l)"); // determines the text that is written on top of the submodule
         @display("i=block/star");
 }

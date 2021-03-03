@@ -22,6 +22,6 @@ import inet.protocolelement.checksum.base.FcsInserterBase;
 simple FcsHeaderInserter extends FcsInserterBase
 {
     parameters:
-        string headerPosition @unit("front","back") = default("back");
+        string headerPosition @mutable @unit("front","back") = default("back");
         @class(FcsHeaderInserter);
 }

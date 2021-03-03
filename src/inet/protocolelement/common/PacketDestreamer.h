@@ -43,6 +43,7 @@ class INET_API PacketDestreamer : public PacketProcessorBase, public virtual IPa
 
   protected:
     virtual void initialize(int stage) override;
+    virtual void handleParameterChange(const char *name) override;
     virtual void handleMessage(cMessage *message) override;
 
     virtual bool isStreaming() const { return streamedPacket != nullptr; }

@@ -24,12 +24,17 @@ namespace inet {
 
 Define_Module(PacketEmitter);
 
-void PacketEmitter::initialize(int stage)
+void PacketEmitter::handleParameterChange(const char *name)
 {
-    PacketFlowBase::initialize(stage);
-    if (stage == INITSTAGE_LOCAL) {
+    if (name == nullptr) {
+        // at initialize only
         signal = registerSignal(par("signalName"));
+    }
+    if (name == nullptr || !strcmp(name, "packetFilter") || !strcmp(name, "packetDataFilter")) {
         packetFilter.setPattern(par("packetFilter"), par("packetDataFilter"));
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "direction")) {
         const char *directionString = par("direction");
         if (!strcmp(directionString, "inbound"))
             direction = DIRECTION_INBOUND;
@@ -39,7 +44,14 @@ void PacketEmitter::initialize(int stage)
             direction = DIRECTION_UNDEFINED;
         else
             throw cRuntimeError("Unknown direction parameter value");
+        if (name) return;
     }
+    PacketFlowBase::handleParameterChange(name);
+}
+
+void PacketEmitter::initialize(int stage)
+{
+    PacketFlowBase::initialize(stage);
 }
 
 void PacketEmitter::processPacket(Packet *packet)

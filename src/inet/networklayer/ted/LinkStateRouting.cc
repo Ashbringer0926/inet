@@ -43,28 +43,38 @@ LinkStateRouting::~LinkStateRouting()
     cancelAndDelete(announceMsg);
 }
 
+void LinkStateRouting::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize only:
+        IIpv4RoutingTable *rt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
+        routerId = rt->getRouterId();
+        tedmod = getModuleFromPar<Ted>(par("tedModule"), this);
+    }
+    if (name == nullptr || !strcmp(name, "peers")) {
+        // peers are given as interface names in the "peers" module parameter;
+        // store corresponding interface addresses in peerIfAddrs[]
+        cStringTokenizer tokenizer(par("peers"));
+        const char *token;
+        IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
+        peerIfAddrs.clear();
+        while ((token = tokenizer.nextToken()) != nullptr) {
+            peerIfAddrs.push_back(CHK(ift->findInterfaceByName(token))->getProtocolData<Ipv4InterfaceData>()->getIPAddress());
+        }
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void LinkStateRouting::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
     // TODO INITSTAGE
     if (stage == INITSTAGE_ROUTING_PROTOCOLS) {
-        tedmod = getModuleFromPar<Ted>(par("tedModule"), this);
-
-        IIpv4RoutingTable *rt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
-        routerId = rt->getRouterId();
-
         // listen for TED modifications
         cModule *host = getContainingNode(this);
         host->subscribe(tedChangedSignal, this);
-
-        // peers are given as interface names in the "peers" module parameter;
-        // store corresponding interface addresses in peerIfAddrs[]
-        cStringTokenizer tokenizer(par("peers"));
-        IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
-        const char *token;
-        while ((token = tokenizer.nextToken()) != nullptr) {
-            peerIfAddrs.push_back(CHK(ift->findInterfaceByName(token))->getProtocolData<Ipv4InterfaceData>()->getIPAddress());
-        }
 
         // schedule start of flooding link state info
         announceMsg = new cMessage("announce");

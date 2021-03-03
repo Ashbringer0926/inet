@@ -26,11 +26,19 @@ namespace inet {
 
 Define_Module(FcsHeaderInserter);
 
+void FcsHeaderInserter::handleParameterChange(const char *name)
+{
+    if (name == nullptr || !strcmp(name, "headerPosition")) {
+        headerPosition = parseHeaderPosition(par("headerPosition"));
+        if (name) return;
+    }
+    FcsInserterBase::handleParameterChange(name);
+}
+
 void FcsHeaderInserter::initialize(int stage)
 {
     FcsInserterBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        headerPosition = parseHeaderPosition(par("headerPosition"));
         registerService(AccessoryProtocol::fcs, inputGate, nullptr);
         registerProtocol(AccessoryProtocol::fcs, outputGate, nullptr);
     }

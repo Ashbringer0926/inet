@@ -44,7 +44,9 @@ class INET_API SimpleEpEnergyManagement : public cSimpleModule, public virtual I
     LifecycleController lifecycleController;
 
   protected:
+    virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
+    virtual void handleParameterChange(const char *name) override;
     virtual void handleMessage(cMessage *message) override;
     virtual void refreshDisplay() const override;
 

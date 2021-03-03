@@ -34,6 +34,7 @@ class INET_API PaddingInserter : public PacketFlowBase
 
   protected:
     virtual void initialize(int stage) override;
+    virtual void handleParameterChange(const char *name) override;
 
   public:
     virtual void processPacket(Packet *packet) override;

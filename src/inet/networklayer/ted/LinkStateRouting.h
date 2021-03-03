@@ -71,6 +71,7 @@ class INET_API LinkStateRouting : public cSimpleModule, public cListener
   protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
+    virtual void handleParameterChange(const char *name) override;
     virtual void handleMessage(cMessage *msg) override;
 
     virtual void processLINK_STATE_MESSAGE(Packet *msg, Ipv4Address sender);

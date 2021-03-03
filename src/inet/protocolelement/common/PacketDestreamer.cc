@@ -29,11 +29,19 @@ PacketDestreamer::~PacketDestreamer()
     streamedPacket = nullptr;
 }
 
+void PacketDestreamer::handleParameterChange(const char *name)
+{
+    if (name == nullptr || !strcmp(name, "datarate")) {
+        datarate = bps(par("datarate"));
+        if (name) return;
+    }
+    PacketProcessorBase::handleParameterChange(name);
+}
+
 void PacketDestreamer::initialize(int stage)
 {
     PacketProcessorBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        datarate = bps(par("datarate"));
         inputGate = gate("in");
         outputGate = gate("out");
         producer = findConnectedModule<IActivePacketSource>(inputGate);

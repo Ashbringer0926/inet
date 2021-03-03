@@ -31,7 +31,9 @@ class INET_API CrcHeaderChecker : public CrcCheckerBase
     HeaderPosition headerPosition;
 
   protected:
+    virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
+    virtual void handleParameterChange(const char *name) override;
     virtual void processPacket(Packet *packet) override;
 
   public:

@@ -25,11 +25,19 @@ namespace inet {
 
 Define_Module(CrcHeaderChecker);
 
+void CrcHeaderChecker::handleParameterChange(const char *name)
+{
+    if (name == nullptr || !strcmp(name, "headerPosition")) {
+        headerPosition = parseHeaderPosition(par("headerPosition"));
+        if (name) return;
+    }
+    CrcCheckerBase::handleParameterChange(name);
+}
+
 void CrcHeaderChecker::initialize(int stage)
 {
     CrcCheckerBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        headerPosition = parseHeaderPosition(par("headerPosition"));
         registerService(AccessoryProtocol::crc, nullptr, inputGate);
         registerProtocol(AccessoryProtocol::crc, nullptr, outputGate);
     }

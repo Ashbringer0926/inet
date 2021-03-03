@@ -24,14 +24,26 @@ namespace inet {
 
 Define_Module(PaddingInserter);
 
+void PaddingInserter::handleParameterChange(const char *name)
+{
+    if (name == nullptr || !strcmp(name, "minLength")) {
+        minLength = b(par("minLength"));
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "roundingLength")) {
+        roundingLength = b(par("roundingLength"));
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "insertionPosition")) {
+        insertionPosition = parseHeaderPosition(par("insertionPosition"));
+        if (name) return;
+    }
+    PacketFlowBase::handleParameterChange(name);
+}
+
 void PaddingInserter::initialize(int stage)
 {
     PacketFlowBase::initialize(stage);
-    if (stage == INITSTAGE_LOCAL) {
-        minLength = b(par("minLength"));
-        roundingLength = b(par("roundingLength"));
-        insertionPosition = parseHeaderPosition(par("insertionPosition"));
-    }
 }
 
 void PaddingInserter::processPacket(Packet *packet)

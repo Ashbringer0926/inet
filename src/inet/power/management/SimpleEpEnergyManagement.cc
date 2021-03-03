@@ -31,11 +31,26 @@ SimpleEpEnergyManagement::~SimpleEpEnergyManagement()
     cancelAndDelete(lifecycleOperationTimer);
 }
 
+void SimpleEpEnergyManagement::handleParameterChange(const char *name)
+{
+    if (name == nullptr) {
+        // in initialize only:
+    }
+    if (name == nullptr || !strcmp(name, "nodeStartCapacity")) {
+        nodeStartCapacity = J(par("nodeStartCapacity"));
+        if (name) return;
+    }
+    if (name == nullptr || !strcmp(name, "nodeShutdownCapacity")) {
+        nodeShutdownCapacity = J(par("nodeShutdownCapacity"));
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void SimpleEpEnergyManagement::initialize(int stage)
 {
     if (stage == INITSTAGE_LOCAL) {
-        nodeShutdownCapacity = J(par("nodeShutdownCapacity"));
-        nodeStartCapacity = J(par("nodeStartCapacity"));
         networkNode = findContainingNode(this);
         energyStorage = check_and_cast<IEpEnergyStorage *>(networkNode->getSubmodule("energyStorage"));
         auto energyStorageModule = check_and_cast<cModule *>(energyStorage);

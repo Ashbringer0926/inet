@@ -32,6 +32,7 @@ class INET_API CrcHeaderInserter : public CrcInserterBase
 
   protected:
     virtual void initialize(int stage) override;
+    virtual void handleParameterChange(const char *name) override;
     virtual void processPacket(Packet *packet) override;
 };
 

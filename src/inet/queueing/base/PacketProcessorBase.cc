@@ -23,17 +23,25 @@
 namespace inet {
 namespace queueing {
 
+void PacketProcessorBase::handleParameterChange(const char *name)
+{
+    if (name == nullptr || !strcmp(name, "displayStringTextFormat")) {
+        displayStringTextFormat = par("displayStringTextFormat");
+        updateDisplayString();
+        if (name) return;
+    }
+    if (name)
+        throw cRuntimeError("Changing parameter '%s' not supported", name);
+}
+
 void PacketProcessorBase::initialize(int stage)
 {
     if (stage == INITSTAGE_LOCAL) {
-        displayStringTextFormat = par("displayStringTextFormat");
         numProcessedPackets = 0;
         processedTotalLength = b(0);
         WATCH(numProcessedPackets);
         WATCH(processedTotalLength);
     }
-    else if (stage == INITSTAGE_LAST)
-        updateDisplayString();
 }
 
 void PacketProcessorBase::handlePacketProcessed(Packet *packet)

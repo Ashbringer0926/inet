@@ -23,9 +23,9 @@ import inet.queueing.contract.IPacketFlow;
 simple PaddingInserter extends PacketFlowBase like IPacketFlow
 {
     parameters:
-        int minLength @unit(b);
-        int roundingLength @unit(b) = default(1B);
-        string insertionPosition @unit("front","back") = default("back");
+        int minLength @mutable @unit(b);
+        int roundingLength @mutable @unit(b) = default(1B);
+        string insertionPosition @mutable @unit("front","back") = default("back");
         @class(PaddingInserter);
         @display("i=block/inserter");
 }
