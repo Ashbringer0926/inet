@@ -107,12 +107,12 @@
 /examples/ethernet/preemption/,      -f omnetpp.ini -c General -r 0,                1s,              13c0-0255/tplx;9f0e-e3db/~tNl;6a9a-c7a1/~tND;4258-08bb/tyf, PASS, ethernet layered
 /examples/ethernet/gatepreemption/,  -f omnetpp.ini -c General -r 0,                1s,              efab-2d27/tplx;d21b-a25d/~tNl;24be-38d8/~tND;7626-5042/tyf, PASS, ethernet layered
 
-/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c SynchronizedBySimulationTime -r 0, 100ms, 8c3b-48ba/tplx;1392-701e/~tNl;7c36-97fe/~tND;ad4e-d0a5/tyf, PASS, ethernet layered
-/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c UnsynchronizedClocks -r 0, 100ms,         b8db-f25c/tplx;abe9-6683/~tNl;9a96-e442/~tND;fee2-e023/tyf, PASS, ethernet layered
-/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c SynchronizedClocks -r 0, 100ms,           a049-b0c3/tplx;d135-d201/~tNl;a425-74e9/~tND;4a8e-5567/tyf, PASS, ethernet layered
-/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c SynchronizedClocksByGPTP -r 0, 100ms,     8c3b-48ba/tplx;1392-701e/~tNl;7c36-97fe/~tND;ad4e-d0a5/tyf, PASS, ethernet layered
+/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c SynchronizedBySimulationTime -r 0, 100ms, 9982-5190/tplx;ef1a-1297/~tNl;1911-69e5/~tND;ad4e-d0a5/tyf, PASS, ethernet layered
+/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c UnsynchronizedClocks -r 0, 100ms,         ea09-d6c0/tplx;4db3-4ad9/~tNl;ea03-d005/~tND;fee2-e023/tyf, PASS, ethernet layered
+/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c SynchronizedClocks -r 0, 100ms,           2235-b691/tplx;1a56-0282/~tNl;1358-6cc6/~tND;4a8e-5567/tyf, PASS, ethernet layered
+/examples/ethernet/clocksynchronization/, -f omnetpp.ini -c SynchronizedClocksByGPTP -r 0, 100ms,     9982-5190/tplx;ef1a-1297/~tNl;1911-69e5/~tND;ad4e-d0a5/tyf, PASS, ethernet layered
 
-/examples/ethernet/invehicle/,       -f omnetpp.ini -c General -r 0,                100ms,           8cbc-b3bd/tplx;900c-dbbb/~tNl;909a-e97f/~tND;f536-362e/tyf, PASS, ethernet layered
+/examples/ethernet/invehicle/,       -f omnetpp.ini -c General -r 0,                100ms,           8e42-509d/tplx;0d7a-3ed2/~tNl;835c-9cb2/~tND;f536-362e/tyf, PASS, ethernet layered
 
 /examples/geometry/,                 -f omnetpp.ini -c General -r 0,                100s,            75d0-cba9/tplx;ce1d-d136/~tNl;51b3-9d40/~tND;2fef-6362/tyf, PASS, wireless
 
