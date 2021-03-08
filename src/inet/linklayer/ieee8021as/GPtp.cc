@@ -5,9 +5,9 @@
 //           University of Rostock, Germany
 // 
 
-#include "GPtp.h"
+#include "Gptp.h"
 
-#include "GPtpPacket_m.h"
+#include "GptpPacket_m.h"
 
 #include "inet/clock/model/SettableClock.h"
 #include "inet/common/IProtocolRegistrationListener.h"
@@ -22,35 +22,35 @@
 
 namespace inet {
 
-Define_Module(GPtp);
+Define_Module(Gptp);
 
-simsignal_t GPtp::localTimeSignal = cComponent::registerSignal("localTime");
-simsignal_t GPtp::timeDifferenceSignal = cComponent::registerSignal("timeDifference");
-simsignal_t GPtp::rateRatioSignal = cComponent::registerSignal("rateRatio");
-simsignal_t GPtp::peerDelaySignal = cComponent::registerSignal("peerDelay");
+simsignal_t Gptp::localTimeSignal = cComponent::registerSignal("localTime");
+simsignal_t Gptp::timeDifferenceSignal = cComponent::registerSignal("timeDifference");
+simsignal_t Gptp::rateRatioSignal = cComponent::registerSignal("rateRatio");
+simsignal_t Gptp::peerDelaySignal = cComponent::registerSignal("peerDelay");
 
 // MAC address:
 //   01-80-C2-00-00-02 for TimeSync (ieee 802.1as-2020, 13.3.1.2)
 //   01-80-C2-00-00-0E for Announce and Signaling messages, for Sync, Follow_Up, Pdelay_Req, Pdelay_Resp, and Pdelay_Resp_Follow_Up messages
-const MacAddress GPtp::GPTP_MULTICAST_ADDRESS("01:80:C2:00:00:0E");
+const MacAddress Gptp::GPTP_MULTICAST_ADDRESS("01:80:C2:00:00:0E");
 
 // EtherType:
 //   0x8809 for TimeSync (ieee 802.1as-2020, 13.3.1.2)
 //   0x88F7 for Announce and Signaling messages, for Sync, Follow_Up, Pdelay_Req, Pdelay_Resp, and Pdelay_Resp_Follow_Up messages
 
-GPtp::~GPtp()
+Gptp::~Gptp()
 {
     cancelAndDeleteClockEvent(selfMsgDelayReq);
     cancelAndDeleteClockEvent(selfMsgSync);
     cancelAndDeleteClockEvent(requestMsg);
 }
 
-void GPtp::initialize(int stage)
+void Gptp::initialize(int stage)
 {
     ClockUserModuleBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        gPtpNodeType = static_cast<GPtpNodeType>(cEnum::get("GPtpNodeType", "inet")->resolve(par("gPtpNodeType")));
+        gptpNodeType = static_cast<GptpNodeType>(cEnum::get("GptpNodeType", "inet")->resolve(par("gptpNodeType")));
         syncInterval = par("syncInterval");
         pDelayReqProcessingTime = par("pDelayRespInterval");
 
@@ -63,7 +63,7 @@ void GPtp::initialize(int stage)
 
         const char *str = par("slavePort");
         if (*str) {
-            if (gPtpNodeType == MASTER_NODE)
+            if (gptpNodeType == MASTER_NODE)
                 throw cRuntimeError("Parameter inconsistency: MASTER_NODE with slave port");
             auto nic = CHK(interfaceTable->findInterfaceByName(str));
             slavePortId = nic->getInterfaceId();
@@ -71,12 +71,12 @@ void GPtp::initialize(int stage)
             nic->subscribe(receptionEndedSignal, this);
         }
         else
-            if (gPtpNodeType != MASTER_NODE)
-                throw cRuntimeError("Parameter error: Missing slave port for %s", par("gPtpNodeType").stringValue());
+            if (gptpNodeType != MASTER_NODE)
+                throw cRuntimeError("Parameter error: Missing slave port for %s", par("gptpNodeType").stringValue());
 
         auto v = check_and_cast<cValueArray *>(par("masterPorts").objectValue())->asStringVector();
-        if (v.empty() and gPtpNodeType != SLAVE_NODE)
-            throw cRuntimeError("Parameter error: Missing any master port for %s", par("gPtpNodeType").stringValue());
+        if (v.empty() and gptpNodeType != SLAVE_NODE)
+            throw cRuntimeError("Parameter error: Missing any master port for %s", par("gptpNodeType").stringValue());
         for (const auto& p : v) {
             auto nic = CHK(interfaceTable->findInterfaceByName(p.c_str()));
             int portId = nic->getInterfaceId();
@@ -95,7 +95,7 @@ void GPtp::initialize(int stage)
 
         /* Only grandmaster in the domain can initialize the synchronization message periodically
          * so below condition checks whether it is grandmaster and then schedule first sync message */
-        if(gPtpNodeType == MASTER_NODE)
+        if(gptpNodeType == MASTER_NODE)
         {
             // Schedule Sync message to be sent
             selfMsgSync = new ClockEvent("selfMsgSync", GPTP_SELF_MSG_SYNC);
@@ -117,7 +117,7 @@ void GPtp::initialize(int stage)
     }
 }
 
-void GPtp::handleSelfMessage(cMessage *msg)
+void Gptp::handleSelfMessage(cMessage *msg)
 {
     switch(msg->getKind()) {
         case GPTP_SELF_MSG_SYNC:
@@ -132,7 +132,7 @@ void GPtp::handleSelfMessage(cMessage *msg)
 
         case GPTP_SELF_REQ_ANSWER_KIND:
             // masterport:
-            sendPdelayResp(check_and_cast<GPtpReqAnswerEvent*>(msg));
+            sendPdelayResp(check_and_cast<GptpReqAnswerEvent*>(msg));
             delete msg;
             break;
 
@@ -147,14 +147,14 @@ void GPtp::handleSelfMessage(cMessage *msg)
     }
 }
 
-void GPtp::handleMessage(cMessage *msg)
+void Gptp::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         handleSelfMessage(msg);
     }
     else {
         Packet *packet = check_and_cast<Packet *>(msg);
-        auto gptp = packet->peekAtFront<GPtpBase>();
+        auto gptp = packet->peekAtFront<GptpBase>();
         auto gptpMessageType = gptp->getMessageType();
         auto incomingNicId = packet->getTag<InterfaceInd>()->getInterfaceId();
 
@@ -162,20 +162,20 @@ void GPtp::handleMessage(cMessage *msg)
             // slave port
             switch (gptpMessageType) {
                 case GPTPTYPE_SYNC:
-                    processSync(packet, check_and_cast<const GPtpSync *>(gptp.get()));
+                    processSync(packet, check_and_cast<const GptpSync *>(gptp.get()));
                     break;
                 case GPTPTYPE_FOLLOW_UP:
-                    processFollowUp(packet, check_and_cast<const GPtpFollowUp *>(gptp.get()));
+                    processFollowUp(packet, check_and_cast<const GptpFollowUp *>(gptp.get()));
                     // Send a request to send Sync message
-                    // through other gPtp Ethernet interfaces
-                    if(gPtpNodeType == BRIDGE_NODE)
+                    // through other gptp Ethernet interfaces
+                    if(gptpNodeType == BRIDGE_NODE)
                         sendSync();
                     break;
                 case GPTPTYPE_PDELAY_RESP:
-                    processPdelayResp(packet, check_and_cast<const GPtpPdelayResp *>(gptp.get()));
+                    processPdelayResp(packet, check_and_cast<const GptpPdelayResp *>(gptp.get()));
                     break;
                 case GPTPTYPE_PDELAY_RESP_FOLLOW_UP:
-                    processPdelayRespFollowUp(packet, check_and_cast<const GPtpPdelayRespFollowUp *>(gptp.get()));
+                    processPdelayRespFollowUp(packet, check_and_cast<const GptpPdelayRespFollowUp *>(gptp.get()));
                     break;
                 default:
                     throw cRuntimeError("Unknown gPTP packet type: %d", (int)(gptpMessageType));
@@ -184,7 +184,7 @@ void GPtp::handleMessage(cMessage *msg)
         else if (masterPortIds.find(incomingNicId) != masterPortIds.end()) {
             // master port
             if(gptpMessageType == GPTPTYPE_PDELAY_REQ) {
-                processPdelayReq(packet, check_and_cast<const GPtpPdelayReq *>(gptp.get()));
+                processPdelayReq(packet, check_and_cast<const GptpPdelayReq *>(gptp.get()));
             }
             else {
                 throw cRuntimeError("Unaccepted gPTP type: %d", (int)(gptpMessageType));
@@ -198,7 +198,7 @@ void GPtp::handleMessage(cMessage *msg)
     }
 }
 
-void GPtp::sendPacketToNIC(Packet *packet, int portId)
+void Gptp::sendPacketToNIC(Packet *packet, int portId)
 {
     auto networkInterface = interfaceTable->getInterfaceById(portId);
     EV_INFO << "Sending " << packet << " to output interface = " << networkInterface->getInterfaceName() << ".\n";
@@ -213,13 +213,13 @@ void GPtp::sendPacketToNIC(Packet *packet, int portId)
     send(packet, "socketOut");
 }
 
-void GPtp::sendSync()
+void Gptp::sendSync()
 {
-    auto packet = new Packet("GPtpSync");
+    auto packet = new Packet("GptpSync");
     packet->addTag<MacAddressReq>()->setDestAddress(GPTP_MULTICAST_ADDRESS);
-    auto gptp = makeShared<GPtpSync>();
+    auto gptp = makeShared<GptpSync>();
     /* OriginTimestamp always get Sync departure time from grand master */
-    if (gPtpNodeType == MASTER_NODE) {
+    if (gptpNodeType == MASTER_NODE) {
         originTimestamp = clock->getClockTime();
     }
     gptp->setOriginTimestamp(CLOCKTIME_ZERO);
@@ -232,20 +232,20 @@ void GPtp::sendSync()
         sendPacketToNIC(packet->dup(), port);
     delete packet;
 
-    // The sendFollowUp(portId) called by receiveSignal(), when GPtpSync sent
+    // The sendFollowUp(portId) called by receiveSignal(), when GptpSync sent
 }
 
-void GPtp::sendFollowUp(int portId, const GPtpSync *sync, clocktime_t preciseOriginTimestamp)
+void Gptp::sendFollowUp(int portId, const GptpSync *sync, clocktime_t preciseOriginTimestamp)
 {
-    auto packet = new Packet("GPtpFollowUp");
+    auto packet = new Packet("GptpFollowUp");
     packet->addTag<MacAddressReq>()->setDestAddress(GPTP_MULTICAST_ADDRESS);
-    auto gptp = makeShared<GPtpFollowUp>();
+    auto gptp = makeShared<GptpFollowUp>();
     gptp->setPreciseOriginTimestamp(preciseOriginTimestamp);
     gptp->setSequenceId(sync->getSequenceId());
 
-    if (gPtpNodeType == MASTER_NODE)
+    if (gptpNodeType == MASTER_NODE)
         gptp->setCorrectionField(CLOCKTIME_ZERO);
-    else if (gPtpNodeType == BRIDGE_NODE)
+    else if (gptpNodeType == BRIDGE_NODE)
     {
         /**************** Correction field calculation *********************************************
          * It is calculated by adding peer delay, residence time and packet transmission time      *
@@ -259,26 +259,26 @@ void GPtp::sendFollowUp(int portId, const GPtpSync *sync, clocktime_t preciseOri
     sendPacketToNIC(packet, portId);
 }
 
-void GPtp::sendPdelayResp(GPtpReqAnswerEvent* req)
+void Gptp::sendPdelayResp(GptpReqAnswerEvent* req)
 {
     int portId = req->getPortId();
-    auto packet = new Packet("GPtpPdelayResp");
+    auto packet = new Packet("GptpPdelayResp");
     packet->addTag<MacAddressReq>()->setDestAddress(GPTP_MULTICAST_ADDRESS);
-    auto gptp = makeShared<GPtpPdelayResp>();
+    auto gptp = makeShared<GptpPdelayResp>();
     //??? gptp->setSentTime(clock->getClockTime());
     gptp->setRequestingPortIdentity(req->getSourcePortIdentity());
     gptp->setSequenceId(req->getSequenceId());
     gptp->setRequestReceiptTimestamp(req->getIngressTimestamp());
     packet->insertAtFront(gptp);
     sendPacketToNIC(packet, portId);
-    // The sendPdelayRespFollowUp(portId) called by receiveSignal(), when GPtpPdelayResp sent
+    // The sendPdelayRespFollowUp(portId) called by receiveSignal(), when GptpPdelayResp sent
 }
 
-void GPtp::sendPdelayRespFollowUp(int portId, const GPtpPdelayResp* resp)
+void Gptp::sendPdelayRespFollowUp(int portId, const GptpPdelayResp* resp)
 {
-    auto packet = new Packet("GPtpPdelayRespFollowUp");
+    auto packet = new Packet("GptpPdelayRespFollowUp");
     packet->addTag<MacAddressReq>()->setDestAddress(GPTP_MULTICAST_ADDRESS);
-    auto gptp = makeShared<GPtpPdelayRespFollowUp>();
+    auto gptp = makeShared<GptpPdelayRespFollowUp>();
     auto now = clock->getClockTime();
     gptp->setResponseOriginTimestamp(now);
     gptp->setRequestingPortIdentity(resp->getRequestingPortIdentity());
@@ -287,12 +287,12 @@ void GPtp::sendPdelayRespFollowUp(int portId, const GPtpPdelayResp* resp)
     sendPacketToNIC(packet, portId);
 }
 
-void GPtp::sendPdelayReq()
+void Gptp::sendPdelayReq()
 {
     ASSERT(slavePortId != -1);
-    auto packet = new Packet("GPtpPdelayReq");
+    auto packet = new Packet("GptpPdelayReq");
     packet->addTag<MacAddressReq>()->setDestAddress(GPTP_MULTICAST_ADDRESS);
-    auto gptp = makeShared<GPtpPdelayReq>();
+    auto gptp = makeShared<GptpPdelayReq>();
     gptp->setCorrectionField(CLOCKTIME_ZERO);
     //save and send IDs
     PortIdentity portId;
@@ -308,25 +308,25 @@ void GPtp::sendPdelayReq()
 }
 
 
-void GPtp::processSync(Packet *packet, const GPtpSync* gptp)
+void Gptp::processSync(Packet *packet, const GptpSync* gptp)
 {
-    rcvdGPtpSync = true;
-    lastReceivedGPtpSyncSequenceId = gptp->getSequenceId();
+    rcvdGptpSync = true;
+    lastReceivedGptpSyncSequenceId = gptp->getSequenceId();
 
     peerSentTimeSync = gptp->getOriginTimestamp();  // TODO this is unfilled in two-step mode
-    syncIngressTimestamp = packet->getTag<GPtpIngressTimeInd>()->getArrivalClockTime();
+    syncIngressTimestamp = packet->getTag<GptpIngressTimeInd>()->getArrivalClockTime();
 }
 
-void GPtp::processFollowUp(Packet *packet, const GPtpFollowUp* gptp)
+void Gptp::processFollowUp(Packet *packet, const GptpFollowUp* gptp)
 {
-    // check: is received the GPtpSync for this GPtpFollowUp?
-    if (!rcvdGPtpSync) {
-        EV_WARN << "GPtpFollowUp arrived without GPtpSync, dropped";
+    // check: is received the GptpSync for this GptpFollowUp?
+    if (!rcvdGptpSync) {
+        EV_WARN << "GptpFollowUp arrived without GptpSync, dropped";
         return;
     }
     // verify IDs
-    if (gptp->getSequenceId() != lastReceivedGPtpSyncSequenceId) {
-        EV_WARN << "GPtpFollowUp arrived with invalid sequence ID, dropped";
+    if (gptp->getSequenceId() != lastReceivedGptpSyncSequenceId) {
+        EV_WARN << "GptpFollowUp arrived with invalid sequence ID, dropped";
         return;
     }
 
@@ -343,10 +343,10 @@ void GPtp::processFollowUp(Packet *packet, const GPtpFollowUp* gptp)
     EV_INFO << "CORRECTION FIELD         - " << correctionField << endl;
     EV_INFO << "PROPAGATION DELAY        - " << peerDelay << endl;
 
-    rcvdGPtpSync = false;
+    rcvdGptpSync = false;
 }
 
-void GPtp::synchronize()
+void Gptp::synchronize()
 {
     simtime_t now = simTime();
     clocktime_t origNow = clock->getClockTime();
@@ -392,50 +392,50 @@ void GPtp::synchronize()
     emit(timeDifferenceSignal, CLOCKTIME_AS_SIMTIME(newLocalTimeAtTimeSync) - now);
 }
 
-void GPtp::processPdelayReq(Packet *packet, const GPtpPdelayReq* gptp)
+void Gptp::processPdelayReq(Packet *packet, const GptpPdelayReq* gptp)
 {
     peerRequestReceiptTimestamp = clock->getClockTime();
 
-    auto resp = new GPtpReqAnswerEvent("selfMsgPdelayResp", GPTP_SELF_REQ_ANSWER_KIND);
+    auto resp = new GptpReqAnswerEvent("selfMsgPdelayResp", GPTP_SELF_REQ_ANSWER_KIND);
     resp->setPortId(packet->getTag<InterfaceInd>()->getInterfaceId());
-    resp->setIngressTimestamp(packet->getTag<GPtpIngressTimeInd>()->getArrivalClockTime());
+    resp->setIngressTimestamp(packet->getTag<GptpIngressTimeInd>()->getArrivalClockTime());
     resp->setSourcePortIdentity(gptp->getSourcePortIdentity());
     resp->setSequenceId(gptp->getSequenceId());
 
     scheduleClockEventAfter(pDelayReqProcessingTime, resp);
 }
 
-void GPtp::processPdelayResp(Packet *packet, const GPtpPdelayResp* gptp)
+void Gptp::processPdelayResp(Packet *packet, const GptpPdelayResp* gptp)
 {
     // verify IDs
     if (gptp->getRequestingPortIdentity().clockIdentity != getId() || gptp->getRequestingPortIdentity().portNumber != slavePortId) {
-        EV_WARN << "GPtpPdelayResp arrived with invalid PortIdentity, dropped";
+        EV_WARN << "GptpPdelayResp arrived with invalid PortIdentity, dropped";
         return;
     }
     if (gptp->getSequenceId() != lastSentPdelayReqSequenceId) {
-        EV_WARN << "GPtpPdelayResp arrived with invalid sequence ID, dropped";
+        EV_WARN << "GptpPdelayResp arrived with invalid sequence ID, dropped";
         return;
     }
 
     rcvdPdelayResp = true;
-    pdelayRespEventIngressTimestamp = packet->getTag<GPtpIngressTimeInd>()->getArrivalClockTime();
+    pdelayRespEventIngressTimestamp = packet->getTag<GptpIngressTimeInd>()->getArrivalClockTime();
     peerRequestReceiptTimestamp = gptp->getRequestReceiptTimestamp();
     peerResponseOriginTimestamp = CLOCKTIME_ZERO;
 }
 
-void GPtp::processPdelayRespFollowUp(Packet *packet, const GPtpPdelayRespFollowUp* gptp)
+void Gptp::processPdelayRespFollowUp(Packet *packet, const GptpPdelayRespFollowUp* gptp)
 {
     if (!rcvdPdelayResp) {
-        EV_WARN << "GPtpPdelayRespFollowUp arrived without GPtpPdelayResp, dropped";
+        EV_WARN << "GptpPdelayRespFollowUp arrived without GptpPdelayResp, dropped";
         return;
     }
     // verify IDs
     if (gptp->getRequestingPortIdentity().clockIdentity != getId() || gptp->getRequestingPortIdentity().portNumber != slavePortId) {
-        EV_WARN << "GPtpPdelayRespFollowUp arrived with invalid PortIdentity, dropped";
+        EV_WARN << "GptpPdelayRespFollowUp arrived with invalid PortIdentity, dropped";
         return;
     }
     if (gptp->getSequenceId() != lastSentPdelayReqSequenceId) {
-        EV_WARN << "GPtpPdelayRespFollowUp arrived with invalid sequence ID, dropped";
+        EV_WARN << "GptpPdelayRespFollowUp arrived with invalid sequence ID, dropped";
         return;
     }
 
@@ -454,7 +454,7 @@ void GPtp::processPdelayRespFollowUp(Packet *packet, const GPtpPdelayRespFollowU
     emit(peerDelaySignal, CLOCKTIME_AS_SIMTIME(peerDelay));
 }
 
-void GPtp::receiveSignal(cComponent *source, simsignal_t signal, cObject *obj, cObject *details)
+void Gptp::receiveSignal(cComponent *source, simsignal_t signal, cObject *obj, cObject *details)
 {
     Enter_Method("receiveSignal");
 
@@ -464,7 +464,7 @@ void GPtp::receiveSignal(cComponent *source, simsignal_t signal, cObject *obj, c
         auto signal = check_and_cast<cPacket *>(obj);
         auto packet = check_and_cast_nullable<Packet *>(signal->getEncapsulatedPacket());
         if (packet) {
-            packet->addTagIfAbsent<GPtpIngressTimeInd>()->setArrivalClockTime(clock->getClockTime());
+            packet->addTagIfAbsent<GptpIngressTimeInd>()->setArrivalClockTime(clock->getClockTime());
         }
     }
     else if (signal == transmissionEndedSignal) {
@@ -476,16 +476,16 @@ void GPtp::receiveSignal(cComponent *source, simsignal_t signal, cObject *obj, c
                 const auto& ethPhyHeader = packet->peekAtFront<physicallayer::EthernetPhyHeader>();
                 const auto& ethMacHeader = packet->peekAt<EthernetMacHeader>(ethPhyHeader->getChunkLength());
                 if (ethMacHeader->getTypeOrLength() == ETHERTYPE_GPTP) {
-                    const auto& gptp = packet->peekAt<GPtpBase>(ethPhyHeader->getChunkLength() + ethMacHeader->getChunkLength());
+                    const auto& gptp = packet->peekAt<GptpBase>(ethPhyHeader->getChunkLength() + ethMacHeader->getChunkLength());
                     int portId = getContainingNicModule(check_and_cast<cModule*>(source))->getInterfaceId();
                     switch (gptp->getMessageType()) {
                         case GPTPTYPE_PDELAY_RESP: {
-                            auto gptpResp = dynamicPtrCast<const GPtpPdelayResp>(gptp);
+                            auto gptpResp = dynamicPtrCast<const GptpPdelayResp>(gptp);
                             sendPdelayRespFollowUp(portId, gptpResp.get());
                             break;
                         }
                         case GPTPTYPE_SYNC: {
-                            auto gptpSync = dynamicPtrCast<const GPtpSync>(gptp);
+                            auto gptpSync = dynamicPtrCast<const GptpSync>(gptp);
                             sendFollowUp(portId, gptpSync.get(), clock->getClockTime());
                             break;
                         }

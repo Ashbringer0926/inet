@@ -10,16 +10,16 @@ package inet.linklayer.ieee8021as;
 import inet.node.inet.StandardHost;
 
 
-module GPtpEndstation extends StandardHost
+module GptpEndstation extends StandardHost
 {
     parameters:
         clock.typename = default("SettableClock");
     submodules:
-        gPtp: GPtp {
+        gptp: Gptp {
             @display("p=700.11755,75.166");
         }
     connections:
-        gPtp.socketOut --> at.in++;
-        at.out++ --> gPtp.socketIn;
+        gptp.socketOut --> at.in++;
+        at.out++ --> gptp.socketIn;
 }
 

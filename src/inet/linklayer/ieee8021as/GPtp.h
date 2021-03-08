@@ -15,16 +15,16 @@
 #include "inet/common/clock/ClockUserModuleBase.h"
 #include "inet/common/packet/Packet.h"
 #include "inet/networklayer/contract/IInterfaceTable.h"
-#include "inet/linklayer/ieee8021as/GPtpPacket_m.h"
+#include "inet/linklayer/ieee8021as/GptpPacket_m.h"
 
 namespace inet {
 
-class GPtp : public ClockUserModuleBase
+class Gptp : public ClockUserModuleBase
 {
     //parameters:
     IInterfaceTable *interfaceTable = nullptr;
 
-    GPtpNodeType gPtpNodeType;
+    GptpNodeType gptpNodeType;
     int slavePortId = -1; // interface ID of slave port
     std::set<int> masterPortIds; // interface IDs of master ports
     clocktime_t correctionField;
@@ -43,10 +43,10 @@ class GPtp : public ClockUserModuleBase
     /* Slave port - Variables is used for Peer Delay Measurement */
     uint16_t lastSentPdelayReqSequenceId = 0;
     clocktime_t peerDelay;
-    clocktime_t peerRequestReceiptTimestamp;  // pdelayReqIngressTimestamp from peer (received in GPtpPdelayResp)
-    clocktime_t peerResponseOriginTimestamp; // pdelayRespEgressTimestamp from peer (received in GPtpPdelayRespFollowUp)
-    clocktime_t pdelayRespEventIngressTimestamp;  // receiving time of last GPtpPdelayResp
-    clocktime_t pdelayReqEventEgressTimestamp;   // sending time of last GPtpPdelayReq
+    clocktime_t peerRequestReceiptTimestamp;  // pdelayReqIngressTimestamp from peer (received in GptpPdelayResp)
+    clocktime_t peerResponseOriginTimestamp; // pdelayRespEgressTimestamp from peer (received in GptpPdelayRespFollowUp)
+    clocktime_t pdelayRespEventIngressTimestamp;  // receiving time of last GptpPdelayResp
+    clocktime_t pdelayReqEventEgressTimestamp;   // sending time of last GptpPdelayReq
     clocktime_t pDelayReqProcessingTime;  // processing time between arrived PDelayReq and send of PDelayResp
     bool rcvdPdelayResp = false;
 
@@ -56,11 +56,11 @@ class GPtp : public ClockUserModuleBase
     // clocktime_t sentTimeSync;
     clocktime_t newLocalTimeAtTimeSync;
     clocktime_t oldLocalTimeAtTimeSync;
-    clocktime_t peerSentTimeSync;  // sending time of last received GPtpSync
-    clocktime_t syncIngressTimestamp;  // receiving time of last incoming GPtpSync
+    clocktime_t peerSentTimeSync;  // sending time of last received GptpSync
+    clocktime_t syncIngressTimestamp;  // receiving time of last incoming GptpSync
 
-    bool rcvdGPtpSync = false;
-    uint16_t lastReceivedGPtpSyncSequenceId = 0xffff;
+    bool rcvdGptpSync = false;
+    uint16_t lastReceivedGptpSyncSequenceId = 0xffff;
 
     // self timers:
     ClockEvent* selfMsgSync = nullptr;
@@ -83,20 +83,20 @@ class GPtp : public ClockUserModuleBase
     virtual void handleSelfMessage(cMessage *msg);
 
   public:
-    virtual ~GPtp();
+    virtual ~Gptp();
     void sendPacketToNIC(Packet *packet, int portId);
 
     void sendSync();
-    void sendFollowUp(int portId, const GPtpSync *sync, clocktime_t preciseOriginTimestamp);
+    void sendFollowUp(int portId, const GptpSync *sync, clocktime_t preciseOriginTimestamp);
     void sendPdelayReq();
-    void sendPdelayResp(GPtpReqAnswerEvent *req);
-    void sendPdelayRespFollowUp(int portId, const GPtpPdelayResp* resp);
+    void sendPdelayResp(GptpReqAnswerEvent *req);
+    void sendPdelayRespFollowUp(int portId, const GptpPdelayResp* resp);
 
-    void processSync(Packet *packet, const GPtpSync* gptp);
-    void processFollowUp(Packet *packet, const GPtpFollowUp* gptp);
-    void processPdelayReq(Packet *packet, const GPtpPdelayReq* gptp);
-    void processPdelayResp(Packet *packet, const GPtpPdelayResp* gptp);
-    void processPdelayRespFollowUp(Packet *packet, const GPtpPdelayRespFollowUp* gptp);
+    void processSync(Packet *packet, const GptpSync* gptp);
+    void processFollowUp(Packet *packet, const GptpFollowUp* gptp);
+    void processPdelayReq(Packet *packet, const GptpPdelayReq* gptp);
+    void processPdelayResp(Packet *packet, const GptpPdelayResp* gptp);
+    void processPdelayRespFollowUp(Packet *packet, const GptpPdelayRespFollowUp* gptp);
 
     clocktime_t getCalculatedDrift(IClock *clock, clocktime_t value) { return CLOCKTIME_ZERO; }
     void synchronize();

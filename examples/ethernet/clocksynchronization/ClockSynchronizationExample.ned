@@ -14,8 +14,8 @@
 
 package inet.examples.ethernet.clocksynchronization;
 
-import inet.linklayer.ieee8021as.GPtpBridge;
-import inet.linklayer.ieee8021as.GPtpEndstation;
+import inet.linklayer.ieee8021as.GptpBridge;
+import inet.linklayer.ieee8021as.GptpEndstation;
 import inet.networks.WiredNetworkBase;
 import inet.node.ethernet.Eth1G;
 import inet.node.ethernet.EthernetSwitch;
@@ -93,16 +93,16 @@ network ClockSynchronizationExampleNetwork extends WiredNetworkBase
 network ClockSynchronizationGptpExampleNetwork extends WiredNetworkBase
 {
     submodules:
-        source1: GPtpEndstation {
+        source1: GptpEndstation {
             @display("p=300,100");
         }
-        source2: GPtpEndstation {
+        source2: GptpEndstation {
             @display("p=300,300");
         }
-        switch1: GPtpBridge {
+        switch1: GptpBridge {
             @display("p=500,200");
         }
-        switch2: GPtpBridge {
+        switch2: GptpBridge {
             @display("p=700,200");
         }
         sink1: StandardHost {

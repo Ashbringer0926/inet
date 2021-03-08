@@ -45,21 +45,21 @@ const B GPTP_PDELAY_RESP_FOLLOW_UP_PACKET_SIZE = B(54);
 
 namespace inet;
 
-enum GPtpNodeType
+enum GptpNodeType
 {
     MASTER_NODE = 11;
     BRIDGE_NODE = 12;
     SLAVE_NODE  = 13;
 }
 
-enum GPtpPortType
+enum GptpPortType
 {
     MASTER_PORT  = 2;
     SLAVE_PORT   = 1;
     PASSIVE_PORT = 0;
 }
 
-enum GPtpMessageType
+enum GptpMessageType
 {
     GPTPTYPE_SYNC    = 0x0;
     GPTPTYPE_FOLLOW_UP = 0x8;
@@ -68,7 +68,7 @@ enum GPtpMessageType
     GPTPTYPE_PDELAY_RESP_FOLLOW_UP = 0xA;
 }
 
-enum GPtpSelfMsgKind {
+enum GptpSelfMsgKind {
     GPTP_SELF_REQ_ANSWER_KIND = 101;
     GPTP_SELF_MSG_SYNC = 103;
     GPTP_REQUEST_TO_SEND_SYNC = 104;
@@ -76,7 +76,7 @@ enum GPtpSelfMsgKind {
 }
 
 // ieee802.1AS-2020 10.6.2.2.8: flags (Octet2)
-enum GPtpFlags {
+enum GptpFlags {
     twoStepFlag = 2;
 }
 
@@ -107,7 +107,7 @@ struct PortIdentity
 //    UInteger16 offsetScaledLogVariance;
 //};
 
-message GPtpReqAnswerEvent extends ClockEvent
+message GptpReqAnswerEvent extends ClockEvent
 {
     int portId;
     clocktime_t ingressTimestamp;
@@ -116,9 +116,9 @@ message GPtpReqAnswerEvent extends ClockEvent
 }
 
 // ieee802.1AS-2020 11.4.2
-class GPtpBase extends FieldsChunk
+class GptpBase extends FieldsChunk
 {
-    GPtpMessageType messageType;
+    GptpMessageType messageType;
     uint16_t messageLength; // currently unused
     uint8_t domainNumber; // currently unused
     uint16_t flags; // currently unused
@@ -128,7 +128,7 @@ class GPtpBase extends FieldsChunk
     uint8_t logMessageInterval; // currently unused
 }
 
-class GPtpSync extends GPtpBase
+class GptpSync extends GptpBase
 {
     messageType = GPTPTYPE_SYNC;
     flags = twoStepFlag;
@@ -137,7 +137,7 @@ class GPtpSync extends GPtpBase
     // followUpInformationTLV; // filled when twoStep flag is FALSE
 }
 
-class GPtpFollowUp extends GPtpBase
+class GptpFollowUp extends GptpBase
 {
     messageType = GPTPTYPE_FOLLOW_UP;
     chunkLength = GPTP_FOLLOW_UP_PACKET_SIZE;
@@ -150,7 +150,7 @@ class GPtpFollowUp extends GPtpBase
     // ??? int numberOfHops;
 }
 
-class GPtpPdelayReq extends GPtpBase
+class GptpPdelayReq extends GptpBase
 {
     messageType = GPTPTYPE_PDELAY_REQ;
     chunkLength = GPTP_PDELAY_REQ_PACKET_SIZE;
@@ -158,7 +158,7 @@ class GPtpPdelayReq extends GPtpBase
     clocktime_t reserved2;
 }
 
-class GPtpPdelayResp extends GPtpBase
+class GptpPdelayResp extends GptpBase
 {
     messageType = GPTPTYPE_PDELAY_RESP;
     chunkLength = GPTP_PDELAY_RESP_PACKET_SIZE;
@@ -166,7 +166,7 @@ class GPtpPdelayResp extends GPtpBase
     PortIdentity requestingPortIdentity;
 }
 
-class GPtpPdelayRespFollowUp extends GPtpBase
+class GptpPdelayRespFollowUp extends GptpBase
 {
     messageType = GPTPTYPE_PDELAY_RESP_FOLLOW_UP;
     chunkLength = GPTP_PDELAY_RESP_FOLLOW_UP_PACKET_SIZE;
@@ -174,7 +174,7 @@ class GPtpPdelayRespFollowUp extends GPtpBase
     PortIdentity requestingPortIdentity;
 }
 
-class GPtpIngressTimeInd extends TagBase
+class GptpIngressTimeInd extends TagBase
 {
     clocktime_t arrivalClockTime;
 }

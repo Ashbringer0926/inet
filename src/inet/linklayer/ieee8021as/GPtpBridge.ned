@@ -10,18 +10,18 @@ package inet.linklayer.ieee8021as;
 import inet.node.ethernet.EthernetSwitch;
 
 
-module GPtpBridge extends EthernetSwitch
+module GptpBridge extends EthernetSwitch
 {
     parameters:
         clock.typename = default("SettableClock");
-        gPtp.gPtpNodeType = default("BRIDGE_NODE"); // @enum("gPtpNodeType"): MASTER_NODE, BRIDGE_NODE, SLAVE_NODE
+        gptp.gptpNodeType = default("BRIDGE_NODE"); // @enum("gptpNodeType"): MASTER_NODE, BRIDGE_NODE, SLAVE_NODE
         relayUnit.localDeliveryMacAddresses = default(hasStp ? ["01:80:C2:00:00:00", "01:80:C2:00:00:0E"] : ["01:80:C2:00:00:0E"]);
     submodules:
-        gPtp: GPtp {
+        gptp: Gptp {
             @display("p=700,100");
         }
     connections:
-        gPtp.socketOut --> nr.in++;
-        nr.out++ --> gPtp.socketIn;
+        gptp.socketOut --> nr.in++;
+        nr.out++ --> gptp.socketIn;
 }
 
