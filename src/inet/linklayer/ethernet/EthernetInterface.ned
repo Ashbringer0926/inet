@@ -31,6 +31,7 @@ module EthernetInterface extends NetworkInterface like IEthernetInterface
 {
     parameters:
         @lifecycleSupport;
+        string protocol = default("ethernetmac");
         string interfaceTableModule;
         string address = default("auto");   // MAC address as hex string (12 hex digits), or
                                             // "auto". "auto" values will be replaced by
@@ -57,27 +58,21 @@ module EthernetInterface extends NetworkInterface like IEthernetInterface
             parameters:
                 @display("p=700,100");
         }
-        encap: <default("EthernetEncapsulation")> like IEthernetEncapsulation {
-            parameters:
-                @display("p=500,200");
-        }
+        // integrated MAC+PHY layer:
         mac: <default(csmacdSupport ? "EthernetCsmaMac" : "EthernetMac")> like IEtherMac {
             parameters:
                 queue.packetCapacity = default(10000);
                 @display("p=500,300");
         }
     connections:
-        mac.upperLayerOut --> encap.lowerLayerIn;
-        mac.upperLayerIn <-- encap.lowerLayerOut;
-
         mac.phys <--> { @display("m=s"); } <--> phys;
 
-        encap.upperLayerOut --> { @display("m=n"); } --> upperLayerOut if !exists(ingressTC);
-        encap.upperLayerOut --> ingressTC.in if exists(ingressTC);
+        mac.upperLayerOut --> { @display("m=n"); } --> upperLayerOut if !exists(ingressTC);
+        mac.upperLayerOut --> ingressTC.in if exists(ingressTC);
         ingressTC.out --> { @display("m=n"); } --> upperLayerOut if exists(ingressTC);
 
-        upperLayerIn --> { @display("m=n"); } --> encap.upperLayerIn if !exists(egressTC);
+        upperLayerIn --> { @display("m=n"); } --> mac.upperLayerIn if !exists(egressTC);
         upperLayerIn --> { @display("m=n"); } --> egressTC.in if exists(egressTC);
-        egressTC.out --> encap.upperLayerIn if exists(egressTC);
+        egressTC.out --> mac.upperLayerIn if exists(egressTC);
 }
 
