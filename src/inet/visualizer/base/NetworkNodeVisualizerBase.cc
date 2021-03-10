@@ -62,9 +62,10 @@ void NetworkNodeVisualizerBase::receiveSignal(cComponent *source, simsignal_t si
         if (auto moduleDelete = dynamic_cast<cPreModuleDeleteNotification *>(object)) {
             auto module = moduleDelete->module;
             if (isNetworkNode(module) && nodeFilter.matches(module)) {
-                auto visualization = findNetworkNodeVisualization(module);
-                removeNetworkNodeVisualization(visualization);
-                destroyNetworkNodeVisualization(visualization);
+                if (auto visualization = findNetworkNodeVisualization(module)) {
+                    removeNetworkNodeVisualization(visualization);
+                    destroyNetworkNodeVisualization(visualization);
+                }
             }
         }
     }
