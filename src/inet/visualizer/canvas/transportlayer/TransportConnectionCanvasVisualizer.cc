@@ -117,13 +117,13 @@ void TransportConnectionCanvasVisualizer::removeConnectionVisualization(const Tr
     auto connectionCanvasVisualization = static_cast<const TransportConnectionCanvasVisualization *>(connectionVisualization);
     auto sourceModule = getSimulation()->getModule(connectionVisualization->sourceModuleId);
     if (sourceModule != nullptr) {
-        auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(sourceModule));
-        sourceVisualization->removeAnnotation(connectionCanvasVisualization->sourceFigure);
+        if (auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(sourceModule)))
+            sourceVisualization->removeAnnotation(connectionCanvasVisualization->sourceFigure);
     }
     auto destinationModule = getSimulation()->getModule(connectionVisualization->destinationModuleId);
     if (destinationModule != nullptr) {
-        auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(destinationModule));
-        destinationVisualization->removeAnnotation(connectionCanvasVisualization->destinationFigure);
+        if (auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(destinationModule)))
+            destinationVisualization->removeAnnotation(connectionCanvasVisualization->destinationFigure);
     }
     setConnectionLabelsVisible(connectionVisualizations.size() > iconColorSet.getSize());
 }

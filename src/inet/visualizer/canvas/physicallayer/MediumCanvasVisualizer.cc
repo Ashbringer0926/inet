@@ -1012,13 +1012,13 @@ void MediumCanvasVisualizer::handleRadioRemoved(const IRadio *radio)
         invalidDisplay = true;
         auto departureFigure = removeSignalDepartureFigure(radio);
         if (departureFigure != nullptr) {
-            auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
-            networkNodeVisualization->removeAnnotation(departureFigure);
+            if (auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode))
+                networkNodeVisualization->removeAnnotation(departureFigure);
         }
         auto arrivalFigure = removeSignalArrivalFigure(radio);
         if (arrivalFigure != nullptr) {
-            auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
-            networkNodeVisualization->removeAnnotation(arrivalFigure);
+            if (auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode))
+                networkNodeVisualization->removeAnnotation(arrivalFigure);
         }
         if (displayPowerDensityMaps || displaySpectrums || displaySpectrograms)
             networkNode->unsubscribe(IMobility::mobilityStateChangedSignal, this);
@@ -1103,7 +1103,8 @@ void MediumCanvasVisualizer::handleSignalDepartureEnded(const ITransmission *tra
             auto figure = getSignalDepartureFigure(transmitter);
             auto networkNode = getContainingNode(check_and_cast<const cModule *>(transmitter));
             auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
-            networkNodeVisualization->setAnnotationVisible(figure, false);
+            if (networkNodeVisualization != nullptr && figure != nullptr)
+                networkNodeVisualization->setAnnotationVisible(figure, false);
         }
     }
 }
@@ -1165,7 +1166,8 @@ void MediumCanvasVisualizer::handleSignalArrivalEnded(const IReception *receptio
                 auto figure = getSignalArrivalFigure(receiver);
                 auto networkNode = getContainingNode(check_and_cast<const cModule *>(receiver));
                 auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(networkNode);
-                networkNodeVisualization->setAnnotationVisible(figure, false);
+                if (networkNodeVisualization != nullptr && figure != nullptr)
+                    networkNodeVisualization->setAnnotationVisible(figure, false);
             }
         }
     }

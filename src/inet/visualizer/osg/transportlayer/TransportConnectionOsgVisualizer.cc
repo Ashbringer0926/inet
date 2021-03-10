@@ -101,11 +101,11 @@ void TransportConnectionOsgVisualizer::removeConnectionVisualization(const Trans
     TransportConnectionVisualizerBase::removeConnectionVisualization(connectionVisualization);
     auto connectionOsgVisualization = static_cast<const TransportConnectionOsgVisualization *>(connectionVisualization);
     auto sourceModule = getSimulation()->getModule(connectionVisualization->sourceModuleId);
-    auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(sourceModule));
-    sourceVisualization->removeAnnotation(connectionOsgVisualization->sourceNode);
+    if (auto sourceVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(sourceModule)))
+        sourceVisualization->removeAnnotation(connectionOsgVisualization->sourceNode);
     auto destinationModule = getSimulation()->getModule(connectionVisualization->destinationModuleId);
-    auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(destinationModule));
-    destinationVisualization->removeAnnotation(connectionOsgVisualization->destinationNode);
+    if (auto destinationVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(destinationModule)))
+        destinationVisualization->removeAnnotation(connectionOsgVisualization->destinationNode);
 }
 
 } // namespace visualizer

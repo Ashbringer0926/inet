@@ -416,8 +416,8 @@ void MediumOsgVisualizer::handleRadioRemoved(const IRadio *radio)
     auto node = removeRadioOsgNode(radio);
     if (node != nullptr) {
         auto module = const_cast<cModule *>(check_and_cast<const cModule *>(radio));
-        auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(module));
-        networkNodeVisualization->removeAnnotation(node);
+        if (auto networkNodeVisualization = networkNodeVisualizer->findNetworkNodeVisualization(getContainingNode(module)))
+            networkNodeVisualization->removeAnnotation(node);
     }
 }
 
