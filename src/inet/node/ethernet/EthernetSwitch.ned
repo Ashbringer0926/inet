@@ -62,7 +62,7 @@ module EthernetSwitch
         **.macTableModule = default(absPath(".macTable"));
         **.clockModule = default(exists(clock) ? absPath(".clock") : "");
 
-        relayUnit.localDeliveryMacAddresses = default(hasStp ? ["01:80:C2:00:00:00"] : [""]);
+        relayUnit.localDeliveryMacAddresses = default(hasStp ? ["01:80:C2:00:00:00"] : []);
         encap.registerProtocol = true;
         eth[*].mac.promiscuous = default(true);
         ethernet.*.promiscuous = default(true);
