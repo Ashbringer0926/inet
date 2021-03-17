@@ -19,10 +19,9 @@ package inet.linklayer.ethernet;
 
 import inet.linklayer.contract.IEtherMac;
 import inet.linklayer.contract.IEthernetInterface;
-import inet.linklayer.ethernet.contract.IEthernetEncapsulation;
 import inet.networklayer.common.NetworkInterface;
-import inet.queueing.contract.ITrafficConditioner;
-
+import inet.protocolelement.measurement.IMeasurementLayer;
+import inet.protocolelement.trafficconditioner.ITrafficConditionerLayer;
 
 //
 // This module represents an Ethernet network interface.
@@ -32,6 +31,8 @@ module EthernetInterface extends NetworkInterface like IEthernetInterface
     parameters:
         @lifecycleSupport;
         string protocol = default("ethernetmac");
+        bool broadcast = default(true);
+        bool multicast = default(true);
         string interfaceTableModule;
         string address = default("auto");   // MAC address as hex string (12 hex digits), or
                                             // "auto". "auto" values will be replaced by
@@ -43,20 +44,21 @@ module EthernetInterface extends NetworkInterface like IEthernetInterface
         *.interfaceTableModule = default(absPath(interfaceTableModule));
         *.fcsMode = fcsMode;
         *.duplexMode = duplexMode;
+        *.bitrate = default(bitrate);
     gates:
         input upperLayerIn;
         output upperLayerOut;
         input cutthroughIn @loose;
         output cutthroughOut @loose;
-        inout phys @labels(EtherFrame);
+        inout phys @labels(EthernetSignal);
     submodules:
-        egressTC: <default("")> like ITrafficConditioner if typename != "" {
+        trafficConditionerLayer: <default("OmittedTrafficConditionerLayer")> like ITrafficConditionerLayer {
             parameters:
-                @display("p=300,100");
+                @display("p=400,100");
         }
-        ingressTC: <default("")> like ITrafficConditioner if typename != "" {
+        measurementLayer: <default("OmittedMeasurementLayer")> like IMeasurementLayer {
             parameters:
-                @display("p=700,100");
+                @display("p=400,200");
         }
         // integrated MAC+PHY layer:
         mac: <default(csmacdSupport ? "EthernetCsmaMac" : "EthernetMac")> like IEtherMac {
@@ -65,14 +67,14 @@ module EthernetInterface extends NetworkInterface like IEthernetInterface
                 @display("p=500,300");
         }
     connections:
+        upperLayerIn --> { @display("m=n"); } --> trafficConditionerLayer.upperLayerIn;
+        trafficConditionerLayer.lowerLayerOut --> measurementLayer.upperLayerIn;
+        measurementLayer.lowerLayerOut --> mac.upperLayerIn;
+
         mac.phys <--> { @display("m=s"); } <--> phys;
 
-        mac.upperLayerOut --> { @display("m=n"); } --> upperLayerOut if !exists(ingressTC);
-        mac.upperLayerOut --> ingressTC.in if exists(ingressTC);
-        ingressTC.out --> { @display("m=n"); } --> upperLayerOut if exists(ingressTC);
-
-        upperLayerIn --> { @display("m=n"); } --> mac.upperLayerIn if !exists(egressTC);
-        upperLayerIn --> { @display("m=n"); } --> egressTC.in if exists(egressTC);
-        egressTC.out --> mac.upperLayerIn if exists(egressTC);
+        mac.upperLayerOut --> measurementLayer.lowerLayerIn;
+        measurementLayer.upperLayerOut --> trafficConditionerLayer.lowerLayerIn;
+        trafficConditionerLayer.upperLayerOut --> { @display("m=n"); } --> upperLayerOut;
 }
 
