@@ -67,7 +67,7 @@ module LinkLayerNodeBase extends NodeBase
             parameters:
                 @display("p=750,596;b=1000,5,,,,1");
         }
-        ethernet: <default("")> like IEthernetLayer if typename != "" {
+        ethernet: <default("EthernetLayer")> like IEthernetLayer if typename != "" {
             parameters:
                 @display("p=375,526");
         }

@@ -23,8 +23,11 @@ import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.contract.IMacAddressTable;
 import inet.linklayer.contract.IMacRelayUnit;
 import inet.linklayer.contract.IWirelessInterface;
+import inet.linklayer.ethernet.modular.EthernetLayer;
+import inet.linklayer.ieee8021q.Ieee8021qLayer;
 import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
+
 
 //
 // A generic access point supporting multiple wireless radios, and
@@ -53,7 +56,7 @@ module AccessPoint
         wlan[*].llc.typename = default("Ieee80211Portal");
         wlan[*].agent.typename = default("");
         wlan[*].radio.antenna.mobilityModule = default("^.^.^.mobility");
-        eth[*].encap.typename = "OmittedEthernetEncapsulation";
+        //eth[*].encap.typename = "OmittedEthernetEncapsulation";
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         relayUnit.hasStp = false;
     gates:
@@ -85,31 +88,58 @@ module AccessPoint
             parameters:
                 @display("p=800,200;b=1200,5,,,,1");
         }
+        ethernet: EthernetLayer if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit) {
+            @display("p=500,250");
+            *.promiscuous = true;
+        }
+        ieee8021q: Ieee8021qLayer if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit) {
+            @display("p=700,250");
+        }
+        li: MessageDispatcher if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit) {
+            parameters:
+                @display("p=800,300;b=1200,5");
+        }
         wlan[numWlanInterfaces]: <default("Ieee80211Interface")> like IWirelessInterface {
             parameters:
-                @display("p=250,300,row,150;q=queue");
+                @display("p=250,400,row,150;q=queue");
         }
         eth[sizeof(ethg)]: <default("EthernetInterface")> like IEthernetInterface {
             parameters:
                 mac.promiscuous = true;
-                @display("p=850,300,row;q=txQueue");
+                @display("p=850,400,row;q=txQueue");
         }
     connections allowunconnected:
-        nl.out++--> relayUnit.ifIn if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
+        nl.out++ --> relayUnit.ifIn if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
         nl.in++ <-- relayUnit.ifOut if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
+
+        nl.out++ --> li.in++;
+        li.out++ --> nl.in++;
+
+        ieee8021q.upperLayerOut --> nl.in++ if exists(ieee8021q);
+        nl.out++ --> ieee8021q.upperLayerIn if exists(ieee8021q);
+
+        nl.out++ --> ethernet.upperLayerIn if exists(ethernet);
+        ethernet.upperLayerOut --> nl.in++ if exists(ethernet);
+
+        ethernet.lowerLayerOut --> li.in++ if exists(ethernet);
+        li.out++ --> ethernet.lowerLayerIn if exists(ethernet);
+
+        ieee8021q.lowerLayerOut --> li.in++ if exists(ieee8021q);
+        li.out++ --> ieee8021q.lowerLayerIn if exists(ieee8021q);
+
         // connections to network outside
         // wireless interfaces MUST be connected first (i.e. ports 0..numWlanInterfaces-1)
         // because broadcasts must be handled differently for wireless IFs by the relayUnit
         for i=0..numWlanInterfaces-1 {
             radioIn[i] --> { @display("m=s"); } --> wlan[i].radioIn;
-            wlan[i].upperLayerOut --> nl.in++ if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
-            wlan[i].upperLayerIn <-- nl.out++ if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
+            wlan[i].upperLayerOut --> li.in++ if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
+            wlan[i].upperLayerIn <-- li.out++ if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
         }
         // ethernet must be connected only AFTER wireless ports
         for i=0..sizeof(ethg)-1 {
             eth[i].phys <--> { @display("m=s"); } <--> ethg[i];
-            eth[i].upperLayerIn <-- nl.out++ if sizeof(ethg)+numWlanInterfaces>1;
-            eth[i].upperLayerOut --> nl.in++ if sizeof(ethg)+numWlanInterfaces>1;
+            eth[i].upperLayerIn <-- li.out++ if sizeof(ethg)+numWlanInterfaces>1;
+            eth[i].upperLayerOut --> li.in++ if sizeof(ethg)+numWlanInterfaces>1;
         }
 }
 
