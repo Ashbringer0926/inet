@@ -191,9 +191,6 @@ void EthernetEncapsulation::processPacketFromHigherLayer(Packet *packet)
     ethHeader->setDest(macAddressReq->getDestAddress());
     ethHeader->setTypeOrLength(typeOrLength);
     packet->insertAtFront(ethHeader);
-    const auto& ethernetFcs = makeShared<EthernetFcs>();
-    ethernetFcs->setFcsMode(fcsMode);
-    packet->insertAtBack(ethernetFcs);
     packet->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ethernetMac);
     EV_INFO << "Sending " << packet << " to lower layer.\n";
     send(packet, "lowerLayerOut");
@@ -202,7 +199,6 @@ void EthernetEncapsulation::processPacketFromHigherLayer(Packet *packet)
 const Ptr<const EthernetMacHeader> EthernetEncapsulation::decapsulateMacHeader(Packet *packet)
 {
     auto ethHeader = packet->popAtFront<EthernetMacHeader>();
-    packet->popAtBack<EthernetFcs>(ETHER_FCS_BYTES);
 
     // add Ieee802Ctrl to packet
     auto macAddressInd = packet->addTagIfAbsent<MacAddressInd>();
