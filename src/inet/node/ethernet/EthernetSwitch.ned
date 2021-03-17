@@ -32,7 +32,9 @@ import inet.linklayer.contract.ISpanningTree;
 import inet.linklayer.ethernet.contract.IEthernetEncapsulation;
 import inet.linklayer.ethernet.contract.IEthernetLayer;
 import inet.linklayer.ieee8021q.Ieee8021qLayer;
+import inet.linklayer.ieee8022.Ieee8022Llc;
 import inet.networklayer.common.InterfaceTable;
+
 
 //
 // Model of an Ethernet switch.
@@ -62,6 +64,7 @@ module EthernetSwitch
 
         relayUnit.hasStp = hasStp;
         encap.registerProtocol = true;
+        llc.registerProtocol = true;
         eth[*].mac.promiscuous = default(true);
         ethernet.*.promiscuous = default(true);
 
@@ -105,7 +108,7 @@ module EthernetSwitch
             parameters:
                 @display("p=250,700,row,150;q=txQueue");
         }
-        encap: <default("EthernetEncapsulation")> like IEthernetEncapsulation if typename != "" {
+        encap: <default("")> like IEthernetEncapsulation if typename != "" {  // EthernetEncapsulation
             @display("p=800,250");
         }
         policy: <default("OmittedPolicyLayer")> like IPolicyLayer {
@@ -121,6 +124,9 @@ module EthernetSwitch
         ieee8021q: Ieee8021qLayer {
             @display("p=700,450");
         }
+        llc: Ieee8022Llc {
+            @display("p=900,450");
+        }
         cutthrough: MessageDispatcher if enableCutthrough {
             @display("p=800,600;b=1200,5");
         }
@@ -130,6 +136,9 @@ module EthernetSwitch
 
         ieee8021q.lowerLayerOut --> li.in++ if exists(ieee8021q);
         li.out++ --> ieee8021q.lowerLayerIn if exists(ieee8021q);
+
+        llc.lowerLayerOut --> li.in++ if exists(llc);
+        li.out++ --> llc.lowerLayerIn if exists(llc);
 
         for i=0..sizeof(ethg)-1 {
             eth[i].cutthroughOut --> cutthrough.in++ if enableCutthrough;
@@ -144,6 +153,9 @@ module EthernetSwitch
 
         rl.out++ --> li.in++;
         li.out++ --> rl.in++;
+
+        llc.upperLayerOut --> rl.in++ if exists(llc);
+        rl.out++ --> llc.upperLayerIn if exists(llc);
 
         ieee8021q.upperLayerOut --> rl.in++ if exists(ieee8021q);
         rl.out++ --> ieee8021q.upperLayerIn if exists(ieee8021q);
