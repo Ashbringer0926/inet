@@ -22,6 +22,8 @@ import inet.common.MessageDispatcher;
 import inet.common.misc.MessageChecker;
 import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.contract.IPppInterface;
+import inet.linklayer.ethernet.contract.IEthernetLayer;
+import inet.linklayer.ieee8021q.Ieee8021qLayer;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4NetworkLayer;
 import inet.routing.bgpv4.Bgp;
@@ -86,13 +88,23 @@ module BGPRouterEx
             parameters:
                 @display("b=400,5,,,,1;p=325,480");
         }
+        ethernet: <default("EthernetLayer")> like IEthernetLayer if typename != "" {
+            @display("p=250,560");
+        }
+        ieee8021q: Ieee8021qLayer {
+            @display("p=400,560");
+        }
+        li: MessageDispatcher {
+            parameters:
+                @display("p=325,640;b=400,5");
+        }
         ppp[sizeof(pppg)]: <default("PppInterface")> like IPppInterface {
             parameters:
-                @display("p=250,560,row,110;q=l2queue;i=block/ifcard");
+                @display("p=250,720,row,110;q=l2queue;i=block/ifcard");
         }
         eth[sizeof(ethg)]: <default("EthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=400,560,row,110;q=l2queue;i=block/ifcard");
+                @display("p=400,720,row,110;q=l2queue;i=block/ifcard");
         }
     connections allowunconnected:
         bgp.socketOut --> { @display("m=s"); } --> snifferOut.in;
@@ -112,17 +124,32 @@ module BGPRouterEx
         ipv4.ifOut --> { @display("m=s"); } --> nl.in++;
         ipv4.ifIn <-- { @display("m=s"); } <-- nl.out++;
 
+        nl.out++ --> li.in++;
+        li.out++ --> nl.in++;
+
+        ieee8021q.upperLayerOut --> nl.in++ if exists(ieee8021q);
+        nl.out++ --> ieee8021q.upperLayerIn if exists(ieee8021q);
+
+        nl.out++ --> ethernet.upperLayerIn if exists(ethernet);
+        ethernet.upperLayerOut --> nl.in++ if exists(ethernet);
+
+        ethernet.lowerLayerOut --> li.in++ if exists(ethernet);
+        li.out++ --> ethernet.lowerLayerIn if exists(ethernet);
+
+        ieee8021q.lowerLayerOut --> li.in++ if exists(ieee8021q);
+        li.out++ --> ieee8021q.lowerLayerIn if exists(ieee8021q);
+
         // connections to network outside
         for i=0..sizeof(pppg)-1 {
             pppg[i] <--> ppp[i].phys;
-            ppp[i].upperLayerOut --> nl.in++;
-            ppp[i].upperLayerIn <-- nl.out++;
+            ppp[i].upperLayerOut --> li.in++;
+            ppp[i].upperLayerIn <-- li.out++;
         }
 
         for i=0..sizeof(ethg)-1 {
             ethg[i] <--> eth[i].phys;
-            eth[i].upperLayerOut --> nl.in++;
-            eth[i].upperLayerIn <-- nl.out++;
+            eth[i].upperLayerOut --> li.in++;
+            eth[i].upperLayerIn <-- li.out++;
         }
 }
 
