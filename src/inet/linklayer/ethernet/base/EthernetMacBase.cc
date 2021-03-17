@@ -646,7 +646,7 @@ void EthernetMacBase::changeReceptionState(MacReceiveState newState)
 
 void EthernetMacBase::addPaddingAndSetFcs(Packet *packet, B requiredMinBytes) const
 {
-    auto ethFcs = packet->removeAtBack<EthernetFcs>(ETHER_FCS_BYTES);
+    auto ethFcs = makeShared<EthernetFcs>();
     ethFcs->setFcsMode(fcsMode);
 
     B paddingLength = requiredMinBytes - ETHER_FCS_BYTES - B(packet->getByteLength());

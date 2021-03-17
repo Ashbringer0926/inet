@@ -757,6 +757,10 @@ void EthernetCsmaMac::frameReceptionComplete()
     }
 
     const auto& frame = packet->peekAtFront<EthernetMacHeader>();
+    // Remove FCS
+    packet->popAtBack<EthernetFcs>(ETHER_FCS_BYTES);
+    packet->addTagIfAbsent<PacketProtocolTag>()->set(&Protocol::ethernetMac, b(0), ETHER_FCS_BYTES);
+
     auto macAddressInd = packet->addTag<MacAddressInd>();
     macAddressInd->setSrcAddress(frame->getSrc());
     macAddressInd->setDestAddress(frame->getDest());

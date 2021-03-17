@@ -234,6 +234,9 @@ void EthernetMac::processMsgFromNetwork(EthernetSignalBase *signal)
     }
 
     const auto& frame = packet->peekAtFront<EthernetMacHeader>();
+    packet->popAtBack<EthernetFcs>(ETHER_FCS_BYTES);
+    packet->addTagIfAbsent<PacketProtocolTag>()->set(&Protocol::ethernetMac, b(0), ETHER_FCS_BYTES);
+
     if (dropFrameNotForUs(packet, frame))
         return;
 
