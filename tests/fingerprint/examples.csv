@@ -114,6 +114,10 @@
 
 /examples/ethernet/invehicle/,       -f omnetpp.ini -c General -r 0,                100ms,           8cbc-b3bd/tplx;900c-dbbb/~tNl;909a-e97f/~tND;f536-362e/tyf, PASS, ethernet layered tsn
 
+/examples/ethernet/redundancy/,       -f omnetpp.ini -c General -r 0,                100ms,           7bcc-5348/tplx;a9eb-bb41/~tNl;35e9-07e0/~tND;ded9-0a2e/tyf, PASS, ethernet layered tsn
+/examples/ethernet/redundancy/,       -f omnetpp2.ini -c General -r 0,               100ms,           45f8-33b3/tplx;d938-c1cd/~tNl;ddf0-1e60/~tND;dda0-9cb8/tyf, PASS, ethernet layered tsn
+/examples/ethernet/redundancy/,       -f omnetpp3.ini -c General -r 0,               100ms,           a6f1-51e3/tplx;d528-6ae6/~tNl;e187-a132/~tND;a432-11f5/tyf, PASS, ethernet layered tsn
+
 /examples/geometry/,                 -f omnetpp.ini -c General -r 0,                100s,            75d0-cba9/tplx;ce1d-d136/~tNl;51b3-9d40/~tND;2fef-6362/tyf, PASS, wireless
 
 /examples/httptools/direct/flashdirect/, -f omnetpp.ini -c General -r 0,               500000s,      f607-5921/tplx;428e-2e61/~tNl;8154-c757/tyf, PASS,
