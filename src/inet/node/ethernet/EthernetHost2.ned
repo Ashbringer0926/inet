@@ -20,7 +20,10 @@ package inet.node.ethernet;
 
 import inet.applications.ethernet.EtherTrafGen;
 import inet.linklayer.contract.IEthernetInterface;
+import inet.linklayer.ethernet.contract.IEthernetLayer;
+import inet.linklayer.ieee8022.Ieee8022Llc;
 import inet.networklayer.common.InterfaceTable;
+
 
 //
 // An example host with one Ethernet interface and an Ethernet traffic
@@ -42,21 +45,34 @@ module EthernetHost2
     gates:
         inout ethg @labels(EtherFrame-conn);
     submodules:
+        interfaceTable: InterfaceTable {
+            parameters:
+                @display("p=70,100;is=s");
+        }
         app: EtherTrafGen {
             @display("p=200,100");
             destInterface = "eth";
         }
-        interfaceTable: InterfaceTable {
-            parameters:
-                @display("p=125,240;is=s");
+        llc: Ieee8022Llc {
+            @display("p=200,200");
+        }
+        ethernet: <default("EthernetLayer")> like IEthernetLayer {
+            @display("p=200,300");
         }
         eth: <default("EthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=200,239,row,150;q=txQueue");
+                @display("p=200,400,row,150;q=txQueue");
         }
     connections:
-        app.out --> eth.upperLayerIn;
-        app.in <-- eth.upperLayerOut;
+        app.out --> llc.upperLayerIn;
+        llc.upperLayerOut --> app.in;
+
+        llc.lowerLayerOut --> ethernet.upperLayerIn;
+        ethernet.upperLayerOut --> llc.lowerLayerIn;
+
+        ethernet.lowerLayerOut --> eth.upperLayerIn;
+        eth.upperLayerOut --> ethernet.lowerLayerIn;
+
         eth.phys <--> { @display("m=s"); } <--> ethg;
 }
 
