@@ -380,10 +380,8 @@ void Topology::calculateUnweightedSingleShortestPathsTo(Node *_target)
         throw cRuntimeError(this, "..ShortestPathTo(): target node is nullptr");
     target = _target;
 
-    for (auto& elem : nodes) {
+    for (auto& elem : nodes)
         elem->dist = INFINITY;
-        elem->outPath = nullptr;
-    }
     target->dist = 0;
 
     std::deque<Node *> q;
@@ -405,9 +403,11 @@ void Topology::calculateUnweightedSingleShortestPathsTo(Node *_target)
 
             if (w->dist == INFINITY) {
                 w->dist = v->dist + 1;
-                w->outPath = v->inLinks[i];
                 q.push_back(w);
             }
+            // the first one will be the shortest
+            if (std::find(w->outPaths.begin(), w->outPaths.end(), v->inLinks[i]) == w->outPaths.end())
+                w->outPaths.push_back(v->inLinks[i]);
         }
     }
 }
@@ -419,10 +419,8 @@ void Topology::calculateWeightedSingleShortestPathsTo(Node *_target)
     target = _target;
 
     // clean path infos
-    for (auto& elem : nodes) {
+    for (auto& elem : nodes)
         elem->dist = INFINITY;
-        elem->outPath = nullptr;
-    }
 
     target->dist = 0;
 
@@ -457,7 +455,9 @@ void Topology::calculateWeightedSingleShortestPathsTo(Node *_target)
                 if (src->dist != INFINITY)
                     q.remove(src); // src is in the queue
                 src->dist = newdist;
-                src->outPath = dest->inLinks[i];
+                // the first one will be the shortest
+                src->outPaths.erase(std::remove(src->outPaths.begin(), src->outPaths.end(), dest->inLinks[i]), src->outPaths.end());
+                src->outPaths.insert(src->outPaths.begin(), dest->inLinks[i]);
 
                 // insert src node to ordered list
                 auto it = q.begin();
@@ -467,6 +467,8 @@ void Topology::calculateWeightedSingleShortestPathsTo(Node *_target)
 
                 q.insert(it, src);
             }
+            else if (std::find(src->outPaths.begin(), src->outPaths.end(), dest->inLinks[i]) == src->outPaths.end())
+                src->outPaths.push_back(dest->inLinks[i]);
         }
     }
 }
