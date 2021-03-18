@@ -33,22 +33,8 @@ void PeriodicGate::initialize(int stage)
         durations = check_and_cast<cValueArray *>(par("durations").objectValue());
         changeTimer = new ClockEvent("ChangeTimer");
     }
-    else if (stage == INITSTAGE_QUEUEING) {
-        if (durations->size() % 2 != 0)
-            throw cRuntimeError("The duration parameter must contain an even number of values");
-        while (offset > 0) {
-            clocktime_t duration = durations->get(index).doubleValueInUnit("s");
-            if (offset > duration) {
-                isOpen_ = !isOpen_;
-                offset -= duration;
-                index = (index + 1) % durations->size();
-            }
-            else
-                break;
-        }
-        if (index < (int)durations->size())
-            scheduleChangeTimer();
-    }
+    else if (stage == INITSTAGE_QUEUEING)
+        initializeGating();
 }
 
 void PeriodicGate::handleParameterChange(const char *name)
@@ -59,8 +45,10 @@ void PeriodicGate::handleParameterChange(const char *name)
             offset = par("offset");
         else if (!strcmp(name, "initiallyOpen"))
             isOpen_ = par("initiallyOpen");
-        else if (!strcmp(name, "durations"))
+        else if (!strcmp(name, "durations")) {
             durations = check_and_cast<cValueArray *>(par("durations").objectValue());
+            initializeGating();
+        }
     }
 }
 
@@ -72,6 +60,24 @@ void PeriodicGate::handleMessage(cMessage *message)
     }
     else
         throw cRuntimeError("Unknown message");
+}
+
+void PeriodicGate::initializeGating()
+{
+    if (durations->size() % 2 != 0)
+        throw cRuntimeError("The duration parameter must contain an even number of values");
+    while (offset > 0) {
+        clocktime_t duration = durations->get(index).doubleValueInUnit("s");
+        if (offset > duration) {
+            isOpen_ = !isOpen_;
+            offset -= duration;
+            index = (index + 1) % durations->size();
+        }
+        else
+            break;
+    }
+    if (index < (int)durations->size())
+        scheduleChangeTimer();
 }
 
 void PeriodicGate::scheduleChangeTimer()
