@@ -112,8 +112,8 @@ module AccessPoint
         nl.out++ --> relayUnit.ifIn if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
         nl.in++ <-- relayUnit.ifOut if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
 
-        nl.out++ --> li.in++;
-        li.out++ --> nl.in++;
+        nl.out++ --> li.in++ if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
+        li.out++ --> nl.in++ if sizeof(ethg)+numWlanInterfaces > 1 && exists(relayUnit);
 
         ieee8021q.upperLayerOut --> nl.in++ if exists(ieee8021q);
         nl.out++ --> ieee8021q.upperLayerIn if exists(ieee8021q);
